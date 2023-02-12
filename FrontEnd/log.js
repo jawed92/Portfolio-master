@@ -1,3 +1,4 @@
+
 const form = document.querySelector('form')
 
 form.addEventListener('submit', async (event) => {
@@ -24,8 +25,9 @@ form.addEventListener('submit', async (event) => {
 
     if (json.token) {
       localStorage.setItem('authToken', json.token)
-      alert('Login successful!')
-      window.location.replace('index.html');
+      // window.location.replace('index.html');
+      checkAuthentication()
+
     } else {
       alert('Login failed. Please try again.')
     }
@@ -34,31 +36,20 @@ form.addEventListener('submit', async (event) => {
     alert('An error occurred. Please try again later.')
   }
 })
-
-const verifyToken = async () => {
-  const token = localStorage.getItem('authToken')
-  if (!token) {
-    return false
-  }
-
-  try {
-    const response = await fetch('http://localhost:5678/api/works/1', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ token })
-    })
-    const json = await response.json()
-
-    if (json.status === 'success') {
-      window.location.replace('index.html');
-      return true
-    } else {
-      return false
-    }
-  } catch (error) {
-    console.error(error)
+export function checkAuthentication() {
+  let loginElement = document.getElementById('login');
+  let logoutElement = document.getElementById('logout');
+  if(localStorage.getItem('authToken')) {
+    console.log('connecté');
+    // loginElement.style.display = 'none'
+    // logoutElement.style.display = 'block'
+    console.log('fgsdfdsd')
+    return true
+  } else {
+    console.log('not connected');
+    loginElement.style.display = 'block';
+    logoutElement.style.display = 'none'
     return false
   }
 }
+

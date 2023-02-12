@@ -1,3 +1,4 @@
+import { checkAuthentication} from "./log.js"
 let categories = window.localStorage.getItem('categories')
 const divGallery = document.querySelector('.gallery')
 
@@ -82,3 +83,38 @@ function genererWorks (works) {
 }
 genererWorks(works)
 console.log(genererWorks)
+
+checkAuthentication()
+
+const modalContainer = document.querySelector(".modal-container");
+const modalTriggers = document.querySelectorAll(".modal-trigger");
+
+modalTriggers.forEach(trigger => trigger.addEventListener("click", toggleModal))
+
+function toggleModal(){
+  modalContainer.classList.toggle("active")
+}
+
+// verifier si login pour afficher le button ouvrir modal
+export function  checkModal() {
+  const openDialog = document.getElementById('openDialog')
+if( checkAuthentication()) {
+  openDialog.style.display = 'block' 
+} else {
+  openDialog.style.display = 'none'
+}
+}
+
+checkModal()
+
+function logOut() {
+  let logoutElement = document.getElementById('logout');
+
+  logoutElement.addEventListener('click', () => {
+    console.log("jawed");
+    localStorage.removeItem('authToken')
+    checkAuthentication()
+    checkModal()
+   })
+}
+logOut()
