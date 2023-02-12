@@ -11,30 +11,30 @@ if (categories === null) {
 } else {
   categories = JSON.parse(categories)
 }
-let images = window.localStorage.getItem('images')
-//Initilisation de la variable pour recuperer la liste des projets
-if (images === null) {
+
+let works = window.localStorage.getItem('works')
+// Initilisation de la variable pour recuperer la liste des projets
+if (works === null) {
   // Recuperation des images de l'API
   const reponse = await fetch('http://localhost:5678/api/works')
 
-  images = await reponse.json()
+  works = await reponse.json()
   // Transformation des pièces en JSON
-  const valeurimages = JSON.stringify(images)
+  const valeurWorks = JSON.stringify(works)
   // Stockage des informations dans le localStorage
-  window.localStorage.setItem('images', valeurimages)
+  window.localStorage.setItem(works, valeurWorks)
 } else {
-  images = JSON.parse(images)
+  works = JSON.parse(works)
 }
-console.log(images)
+console.log(works)
 
 function genererCategories (categories) {
-    const buttonAll = document.getElementById("btn_all")
-    buttonAll.addEventListener('click', function () {
-        divGallery.innerText = "";
-        genererImages(images)
-        })
-  
-    
+  const buttonAll = document.getElementById('btnAll')
+  buttonAll.addEventListener('click', function () {
+    divGallery.innerText = ''
+    genererWorks(works)
+  })
+
   for (let i = 0; i < categories.length; i++) {
     const article = categories[i]
     // Récupération de l'élément du DOM qui accueillera les categories
@@ -46,118 +46,39 @@ function genererCategories (categories) {
     const boutonCategorie = document.createElement('button')
     boutonCategorie.innerText = article.name
     boutonCategorie.dataset.id = article.id
-    
-    
+
     sectionCategories.appendChild(categoriesElement)
     categoriesElement.appendChild(boutonCategorie)
     boutonCategorie.addEventListener('click', function () {
-        
-       let worksFiltered = images.filter(function(work)
-        {
-         if( work.categoryId == categories[i].id){
-            return work;
-         }
-            
-        });
-        console.log(worksFiltered)
-        divGallery.innerText = "";
-        genererImages(worksFiltered)
-        })
+      const worksFiltered = works.filter(function (work) {
+        if (work.categoryId === categories[i].id) {
+          return work
+        }
+      })
+      console.log(worksFiltered)
+      divGallery.innerText = ''
+      genererWorks(worksFiltered)
+    })
   }
 }
 genererCategories(categories)
 
+function genererWorks (works) {
+  for (let i = 0; i < works.length; i++) {
+    const figure = works[i]
 
-
-function genererImages (images) {
-  for (let i = 0; i < images.length; i++) {
-    const figure = images[i]
-    
-    const imagesElement = document.createElement('figure')
-    imagesElement.dataset.id = images[i].id
-    const scrImagesElement = document.createElement('img')
-    scrImagesElement.src = figure.imageUrl
-    scrImagesElement.crossOrigin = 'anonymous'
+    const worksElement = document.createElement('figure')
+    worksElement.dataset.id = works[i].id
+    const scrWorksElement = document.createElement('img')
+    scrWorksElement.src = figure.imageUrl
+    scrWorksElement.crossOrigin = 'anonymous'
     const figcaptionElement = document.createElement('figcaption')
     figcaptionElement.innerText = figure.title
 
-    divGallery.appendChild(imagesElement)
-    imagesElement.appendChild(scrImagesElement)
-    imagesElement.appendChild(figcaptionElement)
+    divGallery.appendChild(worksElement)
+    worksElement.appendChild(scrWorksElement)
+    worksElement.appendChild(figcaptionElement)
   }
 }
-genererImages(images)
-console.log(genererImages)
-/*
-const boutonObjets = document.querySelector('.categoriesNav article button')
- boutonObjets.addEventListener('click', function () {
-  const objetsFiltrees = images.filter(function (images) {
-    return images.categoryId[1]
-  })
-  console.log(boutonObjets)
-  document.querySelector('.gallery').innerHTML = ''
-  genererImages(objetsFiltrees)
-  console.log(objetsFiltrees)
- })
- function ajoutListenersObjets () {
-    const objetsElements = document.querySelectorAll('.categoriesNav article button')
-  
-    for (let i = 0; i < objetsElements.length; i++) {
-      objetsElements[i].addEventListener('click', async function (event) {
-        const id = event.target.dataset.id
-        const reponse = await fetch('http://localhost:5678/api/works')
-        const objets = await reponse.json()
-        window.localStorage.setItem(`objets-${id}`, JSON.stringify(avis))
-        const objetElement = event.target.parentElement
-        afficherObjets(objetElement, objets)
-      })
-      console.log(afficherObjets)
-    }
-  }
- function afficherObjets (objetElement, objets) {
- for (let i = 0; i < objets.length; i++) {
-   avisElement.innerHTML += `<b>${avis[i].utilisateur}:</b> ${avis[i].commentaire} <br>`
- }
- pieceElement.appendChild(avisElement)
- }*/
-/* const boutonTous = document.querySelector('.btn_tous')
-
-boutonTous.addEventListener('click', function () {
-  const tousFiltrees = images.filter(function (images) {
-    return images.categoryId
-  })
-  document.querySelector('.gallery').innerHTML = ''
-  genererImages(tousFiltrees)
-})
-console.log(boutonTous)
-*/
-// const categori = ["Nature", "Animals", "Cities"];
-/*
-// Create a function to fetch the pictures from the API and render them based on the selected category
-function fetchAndRenderPictures(objets) {
-  fetch("http://localhost:5678/api/works")
-    .then(response => response.json())
-    .then(data => {
-      // Filter the data to get only the pictures with the selected category
-      const filteredPictures = data.filter( images => images.categoryId === objets);
-
-      // Clear the previous pictures from the gallery
-      document.getElementById(".gallery").innerHTML = "";
-        console.log(filteredPictures)
-      // Loop through the filtered pictures
-      for (const picture of filteredPictures) {
-        // Create a new img element for the picture
-        const pictureImg = document.createElement("img");
-        pictureImg.src = picture.src;
-        pictureImg.alt = picture.name;
-
-        // Create a new div for the picture
-        const pictureDiv = document.createElement("div");
-        pictureDiv.appendChild(pictureImg);
-
-        // Add the picture div to the gallery
-        document.getElementById(".gallery").appendChild(pictureDiv);
-      }
-      
-    });console.log(fetchAndRenderPictures)
-}*/
+genererWorks(works)
+console.log(genererWorks)
