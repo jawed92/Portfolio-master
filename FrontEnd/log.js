@@ -25,7 +25,7 @@ form.addEventListener('submit', async (event) => {
 
     if (json.token) {
       localStorage.setItem('authToken', json.token)
-      // window.location.replace('index.html');
+      window.location.replace('index.html')
       checkAuthentication()
 
     } else {
@@ -39,10 +39,10 @@ form.addEventListener('submit', async (event) => {
 export function checkAuthentication() {
   let loginElement = document.getElementById('login');
   let logoutElement = document.getElementById('logout');
-  if(localStorage.getItem('authToken')) {
+  if (localStorage.getItem('authToken')) {
     console.log('connecté');
-    // loginElement.style.display = 'none'
-    // logoutElement.style.display = 'block'
+    loginElement.style.display = 'none'
+    logoutElement.style.display = 'block'
     console.log('fgsdfdsd')
     return true
   } else {

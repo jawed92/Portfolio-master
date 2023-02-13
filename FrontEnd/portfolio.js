@@ -1,4 +1,4 @@
-import { checkAuthentication} from "./log.js"
+import { checkAuthentication } from "./log.js"
 let categories = window.localStorage.getItem('categories')
 const divGallery = document.querySelector('.gallery')
 
@@ -29,42 +29,42 @@ if (works === null) {
 }
 console.log(works)
 
-function genererCategories (categories) {
-  const buttonAll = document.getElementById('btnAll')
-  buttonAll.addEventListener('click', function () {
-    divGallery.innerText = ''
-    genererWorks(works)
-  })
+// function genererCategories(categories) {
+//   const buttonAll = document.getElementById('btnAll')
+//   buttonAll.addEventListener('click', function () {
+//     divGallery.innerText = ''
+//     genererWorks(works)
+//   })
 
-  for (let i = 0; i < categories.length; i++) {
-    const article = categories[i]
-    // Récupération de l'élément du DOM qui accueillera les categories
-    const sectionCategories = document.querySelector('.categoriesNav')
-    // Création d’une balise dédiée à une categorie
-    const categoriesElement = document.createElement('article')
-    categoriesElement.dataset.id = categories[i].id
-    // Création des balises
-    const boutonCategorie = document.createElement('button')
-    boutonCategorie.innerText = article.name
-    boutonCategorie.dataset.id = article.id
+//   for (let i = 0; i < categories.length; i++) {
+//     const article = categories[i]
+//     // Récupération de l'élément du DOM qui accueillera les categories
+//     const sectionCategories = document.querySelector('.categoriesNav')
+//     // Création d’une balise dédiée à une categorie
+//     const categoriesElement = document.createElement('article')
+//     categoriesElement.dataset.id = categories[i].id
+//     // Création des balises
+//     const boutonCategorie = document.createElement('button')
+//     boutonCategorie.innerText = article.name
+//     boutonCategorie.dataset.id = article.id
 
-    sectionCategories.appendChild(categoriesElement)
-    categoriesElement.appendChild(boutonCategorie)
-    boutonCategorie.addEventListener('click', function () {
-      const worksFiltered = works.filter(function (work) {
-        if (work.categoryId === categories[i].id) {
-          return work
-        }
-      })
-      console.log(worksFiltered)
-      divGallery.innerText = ''
-      genererWorks(worksFiltered)
-    })
-  }
-}
-genererCategories(categories)
+//     sectionCategories.appendChild(categoriesElement)
+//     categoriesElement.appendChild(boutonCategorie)
+//     boutonCategorie.addEventListener('click', function () {
+//       const worksFiltered = works.filter(function (work) {
+//         if (work.categoryId === categories[i].id) {
+//           return work
+//         }
+//       })
+//       console.log(worksFiltered)
+//       divGallery.innerText = ''
+//       genererWorks(worksFiltered)
+//     })
+//   }
+// }
+// genererCategories(categories)
 
-function genererWorks (works) {
+function genererWorks(works) {
   for (let i = 0; i < works.length; i++) {
     const figure = works[i]
 
@@ -91,18 +91,37 @@ const modalTriggers = document.querySelectorAll(".modal-trigger");
 
 modalTriggers.forEach(trigger => trigger.addEventListener("click", toggleModal))
 
-function toggleModal(){
+function toggleModal() {
   modalContainer.classList.toggle("active")
 }
+const galleryModal = document.querySelector('galleryModal')
+function genererWorksModal(works) {
+  for (let i = 0; i < works.length; i++) {
+    const figure = works[i]
 
-// verifier si login pour afficher le button ouvrir modal
-export function  checkModal() {
-  const openDialog = document.getElementById('openDialog')
-if( checkAuthentication()) {
-  openDialog.style.display = 'block' 
-} else {
-  openDialog.style.display = 'none'
+    const worksModalElement = document.createElement('figure')
+    worksModalElement.dataset.id = works[i].id
+    const scrWorksModalElement = document.createElement('img')
+    scrWorksModalElement.src = figure.imageUrl
+    scrWorksModalElement.crossOrigin = 'anonymous'
+    const figcaptionModalElement = document.createElement('figcaption')
+    figcaptionModalElement.innerText = figure.title
+
+    galleryModal.appendChild(worksModalElement)
+    worksElement.appendChild(scrWorksModalElement)
+    worksElement.appendChild(figcaptionModalElement)
+  }
 }
+genererWorksModal(works)
+console.log(genererWorksModal);
+// verifier si login pour afficher le button ouvrir modal
+function checkModal() {
+  const openDialog = document.getElementById('openDialog')
+  if (checkAuthentication()) {
+    openDialog.style.display = 'block'
+  } else {
+    openDialog.style.display = 'none'
+  }
 }
 
 checkModal()
@@ -111,10 +130,9 @@ function logOut() {
   let logoutElement = document.getElementById('logout');
 
   logoutElement.addEventListener('click', () => {
-    console.log("jawed");
     localStorage.removeItem('authToken')
     checkAuthentication()
     checkModal()
-   })
+  })
 }
 logOut()
