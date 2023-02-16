@@ -26,8 +26,6 @@ form.addEventListener('submit', async (event) => {
     if (json.token) {
       localStorage.setItem('authToken', json.token)
       window.location.replace('index.html')
-      checkAuthentication()
-
     } else {
       alert('Login failed. Please try again.')
     }
