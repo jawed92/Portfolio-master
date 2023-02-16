@@ -136,12 +136,13 @@ function genererWorksModal(works) {
 
     //Ajout des icones corbeille aux images 
     const deleteBtnElement = document.createElement('i');
-    deleteBtnElement.classList.add('fas', 'fa-trash-alt');
+    deleteBtnElement.classList.add('fas', 'fa-trash-alt', 'btnSupprimer');
     figcaptionModalElement.appendChild(deleteBtnElement);
 
     galleryModal.appendChild(worksModalElement)
     worksModalElement.appendChild(scrWorksModalElement)
     worksModalElement.appendChild(figcaptionModalElement)
+    
   }
 }
 genererWorksModal(works)
@@ -153,8 +154,6 @@ if (worksModalElement) {
   deleteImage();
   });
   }
-  genererWorksModal(works)
-  console.log(genererWorksModal);
   
   //Fonction pour supprimer les images de la galerie
   function deleteImage() {
