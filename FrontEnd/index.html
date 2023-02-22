@@ -7,6 +7,7 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Work+Sans&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 	<script src="https://kit.fontawesome.com/e91c07ac0e.js" crossorigin="anonymous"></script>
 	<meta name="description" content="">
 	<script type="module" src="portfolio.js"></script>
@@ -47,39 +48,21 @@
   <div class="modal-content">
     <div class="modalHeader">
 		<h1 class="modalTitle">Galerie photo</h1>
-		<i class="fa-solid fa-xmark close"></i>
+		<span><i class="fas fa-times close"></i></span>
 	</div>
 	<div class="galleryModal">
 	</div>
-	<hr class="separateur">
+	<hr class="separateur" />
 	<div class="btnModal">
-		<button class="ajoutPhoto" type="button">Ajouter une photo</button>
-		<button class="supprimer" type="button">Supprimer</button>
+		
+		<button class="btnAjoutPhoto" type="button">Ajouter une photo</button>
+		<button class="supprimer" type="button">Supprimer la galerie</button>
 	</div>
   </div>
 
 </div>
-<!-- Trigger/Open The Modal -->
+<!-- Bouton pour ouvrir la modale -->
 <button id="myBtn">Modifier</button>
-
-		<!-- <div class="modal-container">
-
-			<div class="overlay modal-trigger"></div>
-		   
-			<div class="modal" aria-labelledby="modalTitle" aria-describedby="dialogDesc">
-			  <button 
-			  aria-label="close modal"
-			  class="close-modal modal-trigger">X</button>
-			  <h1 id="modalTitle">Galerie photo</h1>
-			  <div class="galleryModal">
-
-			  </div>
-			  <hr class="separateur" />
-			  <button class="supprimer" type="button">Supprimer</button>
-			</div>
-	  
-		</div>
-		<button id="openDialog" class="modal-btn modal-trigger">Modifier</button> -->
 		<section class="categoriesNav">
 			<button id="btnAll">Tous</button>
 		</section>

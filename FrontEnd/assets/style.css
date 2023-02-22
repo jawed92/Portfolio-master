@@ -189,6 +189,8 @@ nav li {
 
 li:hover {
 	color: #B1663C;
+	cursor: pointer;
+	text-decoration: none;
 }
 
 #introduction {
@@ -453,7 +455,7 @@ input[type="submit"] {
 	/* Stay in place */
 	z-index: 1;
 	/* Sit on top */
-	padding-top: 100px;
+	padding-top: 15px;
 	/* Location of the box */
 	left: 0;
 	top: 0;
@@ -467,6 +469,7 @@ input[type="submit"] {
 	/* Fallback color */
 	background-color: rgba(0, 0, 0, 0.4);
 	/* Black w/ opacity */
+	text-align: -webkit-center;
 }
 
 /* Modal Content */
@@ -474,12 +477,14 @@ input[type="submit"] {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	gap: 1.5rem;
 	background-color: #fefefe;
 	margin: auto;
 	padding: 65px;
 	border: 1px solid #888;
 	width: 41%;
 	padding-bottom: 30px;
+	border-radius: 10px;
 }
 
 /*Modal Header*/
@@ -502,6 +507,10 @@ input[type="submit"] {
 	float: right;
 	font-size: 28px;
 	font-weight: bold;
+}
+
+.fa-solid .fa-xmark {
+	visibility: visible;
 }
 
 .close:hover,
@@ -538,4 +547,47 @@ input[type="submit"] {
 
 figure {
 	position: relative;
+}
+
+.btnModal {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	width: 45%;
+}
+
+.ajoutPhoto {
+	background-color: #1D6154;
+	color: rgba(255, 255, 255, 1);
+	border: none;
+	padding: 10px 20px 10px 20px;
+}
+
+.supprimer {
+	background: transparent;
+	color: #000;
+	/* Modifiez cette couleur en fonction de votre besoin */
+	border: none;
+}
+
+.supprimer:hover {
+	background-color: transparent;
+}
+
+.separateur {
+	border: 1px solid #B3B3B3;
+	width: 95%;
+	position: relative;
+	border-radius: 30px;
+	top: 20px;
+}
+
+#modalContent2 {
+	display: flex;
+}
+
+.formModal {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
 }

@@ -2,11 +2,11 @@ import { checkAuthentication } from "./log.js"
 let categories = window.localStorage.getItem('categories')
 const divGallery = document.querySelector('.gallery')
 
+//Recuperation des categorie depuis l'api
 if (categories === null) {
-  // Récupération des pièces depuis l'API
   const reponse = await fetch('http://localhost:5678/api/categories')
   categories = await reponse.json()
-  // Transformation des pièces en JSON
+  // Transformation des catégories au format JSON
   const valeurCategories = JSON.stringify(categories)
   window.localStorage.setItem('categories', valeurCategories)
 } else {
@@ -64,6 +64,7 @@ function genererCategories(categories) {
 }
 genererCategories(categories)
 
+//Fonction pour afficher les images de la galerie 
 function genererWorks(works) {
   for (let i = 0; i < works.length; i++) {
     const figure = works[i]
@@ -86,35 +87,24 @@ console.log(genererWorks)
 
 checkAuthentication()
 
-// const modalContainer = document.querySelector(".modal-container");
-// const modalTriggers = document.querySelectorAll(".modal-trigger");
-
-// modalTriggers.forEach(trigger => trigger.addEventListener("click", toggleModal))
-
-// function toggleModal() {
-//   modalContainer.classList.toggle("active")
-// }
-
-// Get the modal
+// Recuperation de la modale
 var modal = document.getElementById("myModal");
-
-// Get the button that opens the modal
+// Recuperation du button pour ouvrir la modale
 var btn = document.getElementById("myBtn");
-
 // Get the <span> element that closes the modal
 var span = document.getElementsByClassName("close")[0];
 
-// When the user clicks the button, open the modal 
+// Fonction pour ouvrir la modale au clique sur la croix
 btn.onclick = function () {
   modal.style.display = "block";
 }
 
-// When the user clicks on <span> (x), close the modal
+// fonction pour fermer la modale
 span.onclick = function () {
   modal.style.display = "none";
 }
 
-// When the user clicks anywhere outside of the modal, close it
+// fonction pour fermer la modale au clique en dehors de celle ci 
 window.onclick = function (event) {
   if (event.target == modal) {
     modal.style.display = "none";
@@ -142,55 +132,115 @@ function genererWorksModal(works) {
     galleryModal.appendChild(worksModalElement)
     worksModalElement.appendChild(scrWorksModalElement)
     worksModalElement.appendChild(figcaptionModalElement)
-    
+
   }
 }
 genererWorksModal(works)
 console.log(genererWorksModal);
+
 const worksModalElement = document.querySelector('.galleryModal [data-id="${works[i].id}"] ');
 
 if (worksModalElement) {
   worksModalElement.querySelector('.fa-trash-alt').addEventListener('click', () => {
-  deleteImage();
+    deleteImage(works[i].id);
   });
-  }
-  
-  //Fonction pour supprimer les images de la galerie
-  function deleteImage() {
-  let worksToDelete = document.querySelector(['data - id = "${ worksId }"']);
-  
-  const deleteIcon = worksToDelete.querySelector('.fa-trash-alt');
-  
-  deleteIcon.addEventListener('click', () => {
-  fetch(galerieUrl, {
-  method: "DELETE",
-  headers: {
-  "Content-Type": "application/json"
-  },
-  body: JSON.stringify({works: [id]}) // liste des IDs des images a supprimer
-  }).then(res => {
-  worksToDelete.remove(); // supprime l'élément de la page
-  })
+}
+
+const API_URL = "http://localhost:5678/api/works";
+// Fonction pour supprimer les images 
+function deleteImage(id, index) {
+  fetch(`${API_URL}/${id}`, {
+    method: 'DELETE',
+  }).then(() => {
+    // Supprime l'élément du DOM
+    const worksModalElement = galleryModal.querySelector(`[data-id="${id}"]`);
+    if (worksModalElement && worksModalElement.parentNode) {
+      worksModalElement.parentNode.removeChild(worksModalElement);
+    }
+
+    const worksElement = divGallery.querySelector(`[data-id="${id}"]`);
+    if (worksElement && worksElement.parentNode) {
+      worksElement.parentNode.removeChild(worksElement);
+    }
+    // Supprime l'élément du tableau
+    works.splice(index, 1);
+    window.localStorage.setItem('works', JSON.stringify(works));
+  }).catch((error) => {
+    console.error(`Une erreur est survenue lors de la suppression de l'image avec l'ID ${id} :`, error);
   });
+}
+// Ajouter un gestionnaire d'événements pour chaque icône de corbeille
+const deleteBtns = document.querySelectorAll('.btnSupprimer');
+deleteBtns.forEach((btn, index) => {
+  const id = btn.parentNode.parentNode.dataset.id;
+  btn.addEventListener('click', () => {
+    deleteImage(id, index);
+  });
+});
+
+const btnAjoutPhoto = document.querySelector('.btnAjoutPhoto');
+const modalContent = document.querySelector('.modal-content')
+btnAjoutPhoto.addEventListener('click', function () {
+  // Récupérez la modale
+  // const modal = document.getElementsByClassName('.modal-content');
+
+  // Effacez le contenu de la modale
+  modalContent.innerHTML = '';
+  modalContent.setAttribute('id', 'modalContent2');
+  // Titre de la modal 
+  const titleModal = document.createElement('h1');
+  titleModal.innerText = 'Ajout Photo';
+  // Créez un formulaire, un selecteur et un bouton pour ajouter une photo
+  const form = document.createElement('form');
+  form.setAttribute('class', 'formModal')
+
+  const input = document.createElement('input');
+  input.type = 'file';
+  const titreAjout = document.createElement('input');
+  titreAjout.type = 'text';
+  const labelTitreAjout = document.createElement('label');
+  labelTitreAjout.setAttribute('for', 'titre');
+  labelTitreAjout.setAttribute('class', 'labelTitreAjout');
+  labelTitreAjout.innerHTML = "Titre";
+  const select = document.createElement('select');
+  const optionInit = document.createElement('optionInit');
+  optionInit.value = "";
+  optionInit.innerText = "Veuillez choisir une catégorie";
+
+  //boucle sur les catégories 
+  for (let i = 0; i < categories.length; i++) {
+    const article = categories[i];
+    //cree des options à ajouter au select
+    const option = document.createElement('option');
+    option.value = article.name;
+    option.innerText = article.name;
+    select.add(option);
   }
+  const button = document.createElement('button');
+  button.innerText = 'Ajouter';
+
+  // Ajoutez le formulaire, le selecteur et le bouton à la modale
+  modalContent.appendChild(titleModal);
+  modalContent.appendChild(form);
+  form.appendChild(input);
+  form.appendChild(labelTitreAjout);
+  form.appendChild(titreAjout);
+  form.appendChild(select);
+  select.appendChild(optionInit);
+  form.appendChild(button);
+});
 
 
-// // Appelle la fonction deleteImage() lorsque le bouton de corbeille est cliqué
-// if (worksModalElement) {
-//   worksModalElement.querySelector('.fa-trash-alt').addEventListener('click', () => {
-//     deleteImage(works[i].id);
-//   });
-// }
-// // verifier si login pour afficher le button ouvrir modal
-// function checkModal() {
-//   const openDialog = document.getElementById('myBtn')
-//   if (checkAuthentication()) {
-//     openDialog.style.display = 'block'
-//   } else {
-//     openDialog.style.display = 'none'
-//   }
-// }
-// checkModal()
+// verifier si login pour afficher le button ouvrir modal
+function checkModal() {
+  const openDialog = document.getElementById('myBtn')
+  if (checkAuthentication()) {
+    openDialog.style.display = 'block'
+  } else {
+    openDialog.style.display = 'none'
+  }
+}
+checkModal()
 
 //fonction pour se déconnecter
 function logOut() {
@@ -203,55 +253,5 @@ function logOut() {
   })
 }
 logOut()
-console.log(logOut);
-// //Fonction pour supprimer les images de la gelerie dans la modale 
-// function supprimerImagesModal(works) {
-//   const galerieUrl = 'http://localhost:5678/api/works/';
 
-//   // Récupérer la liste des images à supprimer
-//   const imagesASupprimer = document.querySelectorAll(".galleryModal:checked");
-//   const imagesIds = [];
-
-//   // Ajouter les identifiants des images à supprimer dans un tableau
-//   imagesASupprimer.forEach(work => imagesIds.push(image.dataset.worksId));
-
-//   if (imagesIds.length === 0) {
-//     alert("Veuillez sélectionner au moins une image à supprimer.");
-//     return;
-//   }
-
-//   // Confirmer la suppression des images
-//   const confirmationModal = document.querySelector(".galleryModal");
-//   const confirmationButton = confirmationModal.querySelector(".supprimer");
-
-  // confirmationButton.addEventListener("click", () => {
-  //   // Envoyer une requête DELETE pour supprimer les images sélectionnées
-  //   fetch(galerieUrl, {
-  //     method: "DELETE",
-  //     headers: {
-  //       "Content-Type": "application/json"
-  //     },
-  //     body: JSON.stringify({ images: imagesIds })
-  //   })
-//       .then(response => {
-//         if (!response.ok) {
-//           throw new Error("Une erreur est survenue lors de la suppression des images.");
-//         }
-//         return response.json();
-//       })
-//       .then(data => {
-//         // Si la suppression a réussi, recharger la page pour afficher les changements
-//         window.location.reload();
-//       })
-//       .catch(error => {
-//         console.error(error);
-//         // Afficher un message d'erreur à l'utilisateur
-//         alert("Une erreur est survenue lors de la suppression des images.");
-//       });
-//   });
-
-//   // Ouvrir la modale de confirmation
-//   confirmationModal.style.display = "block";
-// }
-// supprimerImagesModal()
-// console.log(supprimerImagesModal);
+console.log(logOut)
