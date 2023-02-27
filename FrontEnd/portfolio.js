@@ -179,7 +179,7 @@ deleteBtns.forEach((btn, index) => {
 });
 
 const btnAjoutPhoto = document.querySelector('.btnAjoutPhoto');
-const modalContent = document.querySelector('.modal-content')
+const modalContent = document.querySelector('.modal-content');
 btnAjoutPhoto.addEventListener('click', function () {
   // Récupérez la modale
   // const modal = document.getElementsByClassName('.modal-content');
@@ -198,15 +198,17 @@ btnAjoutPhoto.addEventListener('click', function () {
   input.type = 'file';
   const titreAjout = document.createElement('input');
   titreAjout.type = 'text';
+  titreAjout.setAttribute('name', 'titre');
   const labelTitreAjout = document.createElement('label');
   labelTitreAjout.setAttribute('for', 'titre');
   labelTitreAjout.setAttribute('class', 'labelTitreAjout');
   labelTitreAjout.innerHTML = "Titre";
   const select = document.createElement('select');
-  const optionInit = document.createElement('optionInit');
+  select.setAttribute('name', 'category');
+  const optionInit = document.createElement('option');
   optionInit.value = "";
-  optionInit.innerText = "Veuillez choisir une catégorie";
-
+  optionInit.text = "Veuillez choisir une catégorie";
+  select.add(optionInit, 0);
   //boucle sur les catégories 
   for (let i = 0; i < categories.length; i++) {
     const article = categories[i];
@@ -217,7 +219,57 @@ btnAjoutPhoto.addEventListener('click', function () {
     select.add(option);
   }
   const button = document.createElement('button');
+  button.setAttribute('type', 'submit');
   button.innerText = 'Ajouter';
+  // Ajoutez un gestionnaire d'événements au bouton d'ajout pour envoyer les données via une requête HTTP POST
+  button.addEventListener('click', (event) => {
+    event.preventDefault();
+
+    // Récupérez les éléments du formulaire
+    const form = document.querySelector('form');
+    const input = document.querySelector('input[type="file"]');
+    const titreAjout = document.querySelector('input[name="titre"]');
+    const select = document.querySelector('select[name="category"]');
+
+    // Créez un objet FormData pour envoyer les données du formulaire
+    const formData = new FormData();
+    formData.append('image', input.files[0]);
+    formData.append('title', titreAjout.value);
+    formData.append('category', select.value);
+    form.setAttribute('enctype', 'multipart/form-data');
+    console.log(formData);
+    // Envoyez une requête HTTP POST pour ajouter l'image
+    fetch('http://localhost:5678/api/works', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTY1MTg3NDkzOSwiZXhwIjoxNjUxOTYxMzM5fQ.JGN1p8YIfR-M-5eQ-Ypy6Ima5cKA4VbfL2xMr2MgHm4'
+
+      },
+      body: formData
+    })
+      .then(response => response.json())
+      .then(data => {
+        // Créez un conteneur de style modale pour l'image
+        const modalImageContainer = document.createElement('div');
+        modalImageContainer.setAttribute('class', 'modal-image-container');
+
+        // Créez une balise img pour l'image téléchargée
+        const img = document.createElement('img');
+        // Ajoutez un gestionnaire d'événements pour charger l'image sélectionnée dans l'input file
+        input.addEventListener('input', function () {
+          const file = input.files[0];
+          const url = URL.createObjectURL(file);
+          img.src = url;
+        });
+        modalImageContainer.appendChild(img);
+        modalContent.appendChild(modalImageContainer);
+      })
+
+      .catch(error => {
+        console.error(error);
+      });
+  });
 
   // Ajoutez le formulaire, le selecteur et le bouton à la modale
   modalContent.appendChild(titleModal);
@@ -228,8 +280,8 @@ btnAjoutPhoto.addEventListener('click', function () {
   form.appendChild(select);
   select.appendChild(optionInit);
   form.appendChild(button);
-});
 
+});
 
 // verifier si login pour afficher le button ouvrir modal
 function checkModal() {
