@@ -1,4 +1,5 @@
-import { checkAuthentication } from "./log.js"
+import { checkAuthentification } from "./log.js"
+
 let categories = window.localStorage.getItem('categories')
 const divGallery = document.querySelector('.gallery')
 
@@ -18,10 +19,11 @@ let works = window.localStorage.getItem('works')
 if (works === null) {
   // Recuperation des images de l'API
   const reponse = await fetch('http://localhost:5678/api/works')
-
   works = await reponse.json()
+
   // Transformation des pièces en JSON
   const valeurWorks = JSON.stringify(works)
+
   // Stockage des informations dans le localStorage
   window.localStorage.setItem(works, valeurWorks)
 } else {
@@ -72,7 +74,7 @@ function genererWorks(works) {
     const worksElement = document.createElement('figure')
     worksElement.dataset.id = works[i].id
     const scrWorksElement = document.createElement('img')
-    scrWorksElement.src = figure.imageUrl
+    scrWorksElement.src = figure.imageUrl + '?random=' + Math.random()
     scrWorksElement.crossOrigin = 'anonymous'
     const figcaptionElement = document.createElement('figcaption')
     figcaptionElement.innerText = figure.title
@@ -85,185 +87,197 @@ function genererWorks(works) {
 genererWorks(works)
 console.log(genererWorks)
 
-checkAuthentication()
+checkAuthentification()
 
-// Recuperation de la modale
-var modal = document.getElementById("myModal");
-// Recuperation du button pour ouvrir la modale
-var btn = document.getElementById("myBtn");
-// Get the <span> element that closes the modal
-var span = document.getElementsByClassName("close")[0];
+const modal = document.getElementById("myModal");
+const btn = document.getElementById("myBtn");
+const btnClose = document.getElementsByClassName("close")[0];
+const galleryModal = document.querySelector('.galleryModal');
+const API_URL = "http://localhost:5678/api/works";
+const token = localStorage.getItem('authToken');
 
-// Fonction pour ouvrir la modale au clique sur la croix
-btn.onclick = function () {
-  modal.style.display = "block";
-}
+btn.addEventListener('click', () => {
+  modal.style.display = 'block';
+});
 
-// fonction pour fermer la modale
-span.onclick = function () {
-  modal.style.display = "none";
-}
+btnClose.addEventListener('click', () => {
+  modal.style.display = 'none';
+});
 
-// fonction pour fermer la modale au clique en dehors de celle ci 
-window.onclick = function (event) {
+window.addEventListener('click', (event) => {
   if (event.target == modal) {
     modal.style.display = "none";
   }
-}
-//fonction pour générer les images dans la modale 
-const galleryModal = document.querySelector('.galleryModal')
+});
+
 function genererWorksModal(works) {
   for (let i = 0; i < works.length; i++) {
-    const figure = works[i]
+    const figure = works[i];
 
-    const worksModalElement = document.createElement('figure')
-    worksModalElement.dataset.id = works[i].id
-    const scrWorksModalElement = document.createElement('img')
-    scrWorksModalElement.src = figure.imageUrl
-    scrWorksModalElement.crossOrigin = 'anonymous'
-    const figcaptionModalElement = document.createElement('figcaption')
-    figcaptionModalElement.innerText = 'éditer'
+    const worksModalElement = document.createElement('figure');
+    worksModalElement.dataset.id = figure.id;
 
-    //Ajout des icones corbeille aux images 
+    const scrWorksModalElement = document.createElement('img');
+    scrWorksModalElement.src = figure.imageUrl;
+    scrWorksModalElement.crossOrigin = 'anonymous';
+
+    const figcaptionModalElement = document.createElement('figcaption');
+    figcaptionModalElement.innerText = 'éditer';
+
     const deleteBtnElement = document.createElement('i');
     deleteBtnElement.classList.add('fas', 'fa-trash-alt', 'btnSupprimer');
     figcaptionModalElement.appendChild(deleteBtnElement);
 
-    galleryModal.appendChild(worksModalElement)
-    worksModalElement.appendChild(scrWorksModalElement)
-    worksModalElement.appendChild(figcaptionModalElement)
+    galleryModal.appendChild(worksModalElement);
+    worksModalElement.appendChild(scrWorksModalElement);
+    worksModalElement.appendChild(figcaptionModalElement);
 
+    deleteBtnElement.addEventListener('click', (event) => {
+      event.preventDefault();
+      deleteImage(works[i].id);
+    });
   }
 }
-genererWorksModal(works)
-console.log(genererWorksModal);
+genererWorksModal(works);
 
-const worksModalElement = document.querySelector('.galleryModal [data-id="${works[i].id}"] ');
+//Fonction pour supprimer les images 
+function deleteImage(id) {
+  const worksToDelete = document.querySelector(`[data-id="${id}"]`);
 
-if (worksModalElement) {
-  worksModalElement.querySelector('.fa-trash-alt').addEventListener('click', () => {
-    deleteImage(works[i].id);
-  });
-}
-
-const API_URL = "http://localhost:5678/api/works";
-// Fonction pour supprimer les images 
-function deleteImage(id, index) {
   fetch(`${API_URL}/${id}`, {
-    method: 'DELETE',
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      'Authorization': `Bearer ${token}`
+    },
   }).then(() => {
-    // Supprime l'élément du DOM
-    const worksModalElement = galleryModal.querySelector(`[data-id="${id}"]`);
-    if (worksModalElement && worksModalElement.parentNode) {
-      worksModalElement.parentNode.removeChild(worksModalElement);
-    }
-
-    const worksElement = divGallery.querySelector(`[data-id="${id}"]`);
-    if (worksElement && worksElement.parentNode) {
-      worksElement.parentNode.removeChild(worksElement);
-    }
-    // Supprime l'élément du tableau
-    works.splice(index, 1);
-    window.localStorage.setItem('works', JSON.stringify(works));
-  }).catch((error) => {
-    console.error(`Une erreur est survenue lors de la suppression de l'image avec l'ID ${id} :`, error);
-  });
+    worksToDelete.remove(); // supprime l'élément de la page
+  })
 }
-// Ajouter un gestionnaire d'événements pour chaque icône de corbeille
-const deleteBtns = document.querySelectorAll('.btnSupprimer');
-deleteBtns.forEach((btn, index) => {
-  const id = btn.parentNode.parentNode.dataset.id;
-  btn.addEventListener('click', () => {
-    deleteImage(id, index);
-  });
-});
 
+// Sélectionnez le bouton pour ajouter une photo et le contenu de la modale
 const btnAjoutPhoto = document.querySelector('.btnAjoutPhoto');
 const modalContent = document.querySelector('.modal-content');
+
+// Ajoutez un gestionnaire d'événements pour le clic sur le bouton Ajout Photo
 btnAjoutPhoto.addEventListener('click', function () {
-  // Récupérez la modale
-  // const modal = document.getElementsByClassName('.modal-content');
 
   // Effacez le contenu de la modale
   modalContent.innerHTML = '';
   modalContent.setAttribute('id', 'modalContent2');
+  // Créez un input de type "file" pour permettre la sélection d'un fichier image
+  const input = document.createElement('input');
+  input.type = 'file';
+
   // Titre de la modal 
   const titleModal = document.createElement('h1');
   titleModal.innerText = 'Ajout Photo';
+
   // Créez un formulaire, un selecteur et un bouton pour ajouter une photo
   const form = document.createElement('form');
   form.setAttribute('class', 'formModal')
 
-  const input = document.createElement('input');
-  input.type = 'file';
+  // Ajoutez un gestionnaire d'événements pour la prévisualisation de l'image
+  input.addEventListener('change', function () {
+    const file = this.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.addEventListener('load', function () {
+        const preview = document.createElement('img');
+        preview.src = reader.result;
+        preview.style.maxWidth = '50%';
+        form.replaceChild(preview, input);
+      });
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Créez un champ de saisie pour le titre de la photo
   const titreAjout = document.createElement('input');
   titreAjout.type = 'text';
   titreAjout.setAttribute('name', 'titre');
+
+  // Créez un bouton pour revenir à la page précédente
+  const backButton = document.createElement('button');
+  backButton.setAttribute('class', 'backButton');
+  backButton.innerHTML = '<i class="fas fa-arrow-left"></i>';
+  backButton.addEventListener('click', function () {
+    // modalContent.innerHTML = '';
+
+  });
+
+  // Créez un label pour le champ de saisie du titre de la photo
   const labelTitreAjout = document.createElement('label');
   labelTitreAjout.setAttribute('for', 'titre');
   labelTitreAjout.setAttribute('class', 'labelTitreAjout');
   labelTitreAjout.innerHTML = "Titre";
+
+  // Créez un selecteur pour choisir une catégorie de photo
   const select = document.createElement('select');
   select.setAttribute('name', 'category');
+
+  // Créez une option par défaut pour le selecteur
   const optionInit = document.createElement('option');
   optionInit.value = "";
   optionInit.text = "Veuillez choisir une catégorie";
   select.add(optionInit, 0);
+
   //boucle sur les catégories 
   for (let i = 0; i < categories.length; i++) {
     const article = categories[i];
+
     //cree des options à ajouter au select
     const option = document.createElement('option');
-    option.value = article.name;
+    option.value = article.id;
     option.innerText = article.name;
     select.add(option);
   }
+
   const button = document.createElement('button');
   button.setAttribute('type', 'submit');
+  button.setAttribute('class', 'btnAjout');
   button.innerText = 'Ajouter';
+
   // Ajoutez un gestionnaire d'événements au bouton d'ajout pour envoyer les données via une requête HTTP POST
   button.addEventListener('click', (event) => {
     event.preventDefault();
 
     // Récupérez les éléments du formulaire
     const form = document.querySelector('form');
-    const input = document.querySelector('input[type="file"]');
+
     const titreAjout = document.querySelector('input[name="titre"]');
     const select = document.querySelector('select[name="category"]');
+
+    if (!input.files[0]) {
+      alert('Veuillez choisir un fichier');
+      return;
+    }
 
     // Créez un objet FormData pour envoyer les données du formulaire
     const formData = new FormData();
     formData.append('image', input.files[0]);
     formData.append('title', titreAjout.value);
     formData.append('category', select.value);
-    form.setAttribute('enctype', 'multipart/form-data');
-    console.log(formData);
+    formData.append('userId', 1);
+    // Ajouter un paramètre aléatoire à l'URL de l'image pour forcer le navigateur à la recharger
+    const randomParam = Math.floor(Math.random() * 100000);
+    const imageUrl = `http://localhost:5678/api/works/${formData.id}/image?random=${randomParam}`;
+    const scrWorksElement = document.createElement('img');
+    scrWorksElement.src = imageUrl;
+
+
     // Envoyez une requête HTTP POST pour ajouter l'image
     fetch('http://localhost:5678/api/works', {
       method: 'POST',
       headers: {
-        'Content-Type': 'multipart/form-data',
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTY1MTg3NDkzOSwiZXhwIjoxNjUxOTYxMzM5fQ.JGN1p8YIfR-M-5eQ-Ypy6Ima5cKA4VbfL2xMr2MgHm4'
-
+        'Authorization': `Bearer ${token}`
       },
-      body: formData
+      body: formData,
+
     })
       .then(response => response.json())
       .then(data => {
-        // Créez un conteneur de style modale pour l'image
-        const modalImageContainer = document.createElement('div');
-        modalImageContainer.setAttribute('class', 'modal-image-container');
-
-        // Créez une balise img pour l'image téléchargée
-        const img = document.createElement('img');
-        // Ajoutez un gestionnaire d'événements pour charger l'image sélectionnée dans l'input file
-        input.addEventListener('input', function () {
-          const file = input.files[0];
-          const url = URL.createObjectURL(file);
-          img.src = url;
-        });
-        modalImageContainer.appendChild(img);
-        modalContent.appendChild(modalImageContainer);
+        console.log(data);
       })
 
       .catch(error => {
@@ -273,6 +287,7 @@ btnAjoutPhoto.addEventListener('click', function () {
 
   // Ajoutez le formulaire, le selecteur et le bouton à la modale
   modalContent.appendChild(titleModal);
+  modalContent.appendChild(backButton);
   modalContent.appendChild(form);
   form.appendChild(input);
   form.appendChild(labelTitreAjout);
@@ -286,7 +301,7 @@ btnAjoutPhoto.addEventListener('click', function () {
 // verifier si login pour afficher le button ouvrir modal
 function checkModal() {
   const openDialog = document.getElementById('myBtn')
-  if (checkAuthentication()) {
+  if (checkAuthentification()) {
     openDialog.style.display = 'block'
   } else {
     openDialog.style.display = 'none'
@@ -300,10 +315,10 @@ function logOut() {
 
   logoutElement.addEventListener('click', () => {
     localStorage.removeItem('authToken')
-    checkAuthentication()
+    checkAuthentification()
     checkModal()
   })
 }
 logOut()
 
-console.log(logOut)
+console.log(logOut);

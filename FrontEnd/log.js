@@ -34,7 +34,7 @@ form.addEventListener('submit', async (event) => {
     alert('An error occurred. Please try again later.')
   }
 })
-export function checkAuthentication() {
+export function checkAuthentification() {
   let loginElement = document.getElementById('login');
   let logoutElement = document.getElementById('logout');
   if (localStorage.getItem('authToken')) {
@@ -50,4 +50,13 @@ export function checkAuthentication() {
     return false
   }
 }
+
+// // Fonction pour que l'utilisateur soit déconnecté par desfaut
+// export function deconnecte() {
+//   const token = localStorage.getItem('authToken');
+//   if (token) {
+//     // Si un token est présent, supprimer le token
+//     localStorage.removeItem('authToken');
+//   }
+// }
 
