@@ -1,8 +1,11 @@
 import { checkAuthentification } from "./log.js"
 
+// Variable globales 
 let categories = window.localStorage.getItem('categories')
 const divGallery = document.querySelector('.gallery')
+let works = window.localStorage.getItem('works')
 
+//TOdo a lier avec un déclencheur
 //Recuperation des categorie depuis l'api
 if (categories === null) {
   const reponse = await fetch('http://localhost:5678/api/categories')
@@ -14,7 +17,7 @@ if (categories === null) {
   categories = JSON.parse(categories)
 }
 
-let works = window.localStorage.getItem('works')
+
 // Initilisation de la variable pour recuperer la liste des projets
 if (works === null) {
   // Recuperation des images de l'API
@@ -89,82 +92,113 @@ console.log(genererWorks)
 
 checkAuthentification()
 
-const modal = document.getElementById("myModal");
-const btn = document.getElementById("myBtn");
-const btnClose = document.getElementsByClassName("close")[0];
-const galleryModal = document.querySelector('.galleryModal');
-const API_URL = "http://localhost:5678/api/works";
-const token = localStorage.getItem('authToken');
 
-btn.addEventListener('click', () => {
-  modal.style.display = 'block';
-});
-
-btnClose.addEventListener('click', () => {
-  modal.style.display = 'none';
-});
-
-window.addEventListener('click', (event) => {
-  if (event.target == modal) {
-    modal.style.display = "none";
-  }
-});
-
-function genererWorksModal(works) {
-  for (let i = 0; i < works.length; i++) {
-    const figure = works[i];
-
-    const worksModalElement = document.createElement('figure');
-    worksModalElement.dataset.id = figure.id;
-
-    const scrWorksModalElement = document.createElement('img');
-    scrWorksModalElement.src = figure.imageUrl;
-    scrWorksModalElement.crossOrigin = 'anonymous';
-
-    const figcaptionModalElement = document.createElement('figcaption');
-    figcaptionModalElement.innerText = 'éditer';
-
-    const deleteBtnElement = document.createElement('i');
-    deleteBtnElement.classList.add('fas', 'fa-trash-alt', 'btnSupprimer');
-    figcaptionModalElement.appendChild(deleteBtnElement);
-
-    galleryModal.appendChild(worksModalElement);
-    worksModalElement.appendChild(scrWorksModalElement);
-    worksModalElement.appendChild(figcaptionModalElement);
-
-    deleteBtnElement.addEventListener('click', (event) => {
-      event.preventDefault();
-      deleteImage(works[i].id);
-    });
-  }
-}
-genererWorksModal(works);
-
-//Fonction pour supprimer les images 
-function deleteImage(id) {
-  const worksToDelete = document.querySelector(`[data-id="${id}"]`);
-
-  fetch(`${API_URL}/${id}`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      'Authorization': `Bearer ${token}`
-    },
-  }).then(() => {
-    worksToDelete.remove(); // supprime l'élément de la page
-  })
-}
-
-// Sélectionnez le bouton pour ajouter une photo et le contenu de la modale
-const btnAjoutPhoto = document.querySelector('.btnAjoutPhoto');
+// Récupérer la balise parent
 const modalContent = document.querySelector('.modal-content');
+const modalContainer = document.getElementById("myModal");
 
-// Ajoutez un gestionnaire d'événements pour le clic sur le bouton Ajout Photo
-btnAjoutPhoto.addEventListener('click', function () {
+function genererModal(modalContent) {
 
+  // Créer l'en-tête de la modale
+  const modalHeader = document.createElement('div');
+  modalHeader.classList.add('modalHeader');
+
+  const modalTitle = document.createElement('h1');
+  modalTitle.classList.add('modalTitle');
+  modalTitle.textContent = 'Galerie photo';
+
+  const closeBtn = document.createElement('span');
+  closeBtn.innerHTML = '<i class="fas fa-times close"></i>';
+  closeBtn.classList.add('close');
+
+  modalHeader.appendChild(modalTitle);
+  modalHeader.appendChild(closeBtn);
+
+  // Créer le contenu de la modale
+  const galleryModal = document.createElement('div');
+  galleryModal.classList.add('galleryModal');
+
+  function genererWorksModal(works) {
+    for (let i = 0; i < works.length; i++) {
+      const figure = works[i];
+
+      const worksModalElement = document.createElement('figure');
+      worksModalElement.dataset.id = figure.id;
+
+      const scrWorksModalElement = document.createElement('img');
+      scrWorksModalElement.src = figure.imageUrl;
+      scrWorksModalElement.crossOrigin = 'anonymous';
+
+      const figcaptionModalElement = document.createElement('figcaption');
+      figcaptionModalElement.innerText = 'éditer';
+
+      const deleteBtnElement = document.createElement('i');
+      deleteBtnElement.classList.add('fas', 'fa-trash-alt', 'btnSupprimer');
+      figcaptionModalElement.appendChild(deleteBtnElement);
+
+      galleryModal.appendChild(worksModalElement);
+      worksModalElement.appendChild(scrWorksModalElement);
+      worksModalElement.appendChild(figcaptionModalElement);
+
+
+      // Use a closure to pass the id parameter to the deleteImage function
+      deleteBtnElement.addEventListener('click', (function (id) {
+        return function (event) {
+          event.preventDefault();
+          deleteImage(id);
+        }
+      })(works[i].id));
+    }
+  }
+  genererWorksModal(works);
+
+  // Créer le séparateur
+  const separator = document.createElement('hr');
+  separator.classList.add('separateur');
+
+  // Créer les boutons
+  const btnModal = document.createElement('div');
+  btnModal.classList.add('btnModal');
+
+  const btnAjoutPhoto = document.createElement('button');
+  btnAjoutPhoto.classList.add('btnAjoutPhoto');
+  btnAjoutPhoto.setAttribute('type', 'button');
+  btnAjoutPhoto.textContent = 'Ajouter une photo';
+
+  // Ajoutez un gestionnaire d'événements pour le clic sur le bouton Ajout Photo
+  btnAjoutPhoto.addEventListener('click', function () {
+
+    genererForm();
+
+  });
+
+  const supprimerBtn = document.createElement('button');
+  supprimerBtn.classList.add('supprimer');
+  supprimerBtn.setAttribute('type', 'button');
+  supprimerBtn.textContent = 'Supprimer la galerie';
+
+  btnModal.appendChild(btnAjoutPhoto);
+  btnModal.appendChild(supprimerBtn);
+
+  // Ajouter les éléments à la modale
+  modalContent.appendChild(modalHeader);
+  modalContent.appendChild(galleryModal);
+  modalContent.appendChild(separator);
+  modalContent.appendChild(btnModal);
+
+  // Ajouter la modale à la balise parent
+  modalContainer.appendChild(modalContent);
+}
+genererModal(modalContent);
+
+function genererForm() {
   // Effacez le contenu de la modale
   modalContent.innerHTML = '';
-  modalContent.setAttribute('id', 'modalContent2');
+
+  const closeBtn = document.createElement('span');
+  closeBtn.innerHTML = '<i class="fas fa-times close"></i>';
+  closeBtn.classList.add('close');
+
   // Créez un input de type "file" pour permettre la sélection d'un fichier image
   const input = document.createElement('input');
   input.type = 'file';
@@ -201,8 +235,10 @@ btnAjoutPhoto.addEventListener('click', function () {
   const backButton = document.createElement('button');
   backButton.setAttribute('class', 'backButton');
   backButton.innerHTML = '<i class="fas fa-arrow-left"></i>';
+
   backButton.addEventListener('click', function () {
-    // modalContent.innerHTML = '';
+    modalContent.innerHTML = '';
+    genererModal(modalContent);
 
   });
 
@@ -242,14 +278,22 @@ btnAjoutPhoto.addEventListener('click', function () {
   button.addEventListener('click', (event) => {
     event.preventDefault();
 
-    // Récupérez les éléments du formulaire
-    const form = document.querySelector('form');
-
     const titreAjout = document.querySelector('input[name="titre"]');
     const select = document.querySelector('select[name="category"]');
 
+    // Vérifiez si un fichier a été sélectionné
     if (!input.files[0]) {
       alert('Veuillez choisir un fichier');
+      return;
+    }
+    // Vérifiez si le champ de saisie du titre est vide
+    if (titreAjout.value.trim() === '') {
+      alert('Veuillez saisir un titre pour la photo');
+      return;
+    }
+    // Vérifiez si une catégorie a été sélectionnée
+    if (select.value === '') {
+      alert('Veuillez choisir une catégorie pour la photo');
       return;
     }
 
@@ -259,34 +303,16 @@ btnAjoutPhoto.addEventListener('click', function () {
     formData.append('title', titreAjout.value);
     formData.append('category', select.value);
     formData.append('userId', 1);
-    // Ajouter un paramètre aléatoire à l'URL de l'image pour forcer le navigateur à la recharger
-    const randomParam = Math.floor(Math.random() * 100000);
-    const imageUrl = `http://localhost:5678/api/works/${formData.id}/image?random=${randomParam}`;
-    const scrWorksElement = document.createElement('img');
-    scrWorksElement.src = imageUrl;
 
-
-    // Envoyez une requête HTTP POST pour ajouter l'image
-    fetch('http://localhost:5678/api/works', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      },
-      body: formData,
-
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-      })
-
-      .catch(error => {
-        console.error(error);
-      });
+    saveProject(formData);
+    modalContent.innerHTML = ''
+    genererModal(modalContent);
   });
+
 
   // Ajoutez le formulaire, le selecteur et le bouton à la modale
   modalContent.appendChild(titleModal);
+  modalContent.appendChild(closeBtn);
   modalContent.appendChild(backButton);
   modalContent.appendChild(form);
   form.appendChild(input);
@@ -295,8 +321,61 @@ btnAjoutPhoto.addEventListener('click', function () {
   form.appendChild(select);
   select.appendChild(optionInit);
   form.appendChild(button);
+}
 
+function saveProject(formData) {
+  // Envoyez une requête HTTP POST pour ajouter l'image
+  fetch('http://localhost:5678/api/works', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    },
+    body: formData,
+
+  })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+    })
+
+    .catch(error => {
+      console.error(error);
+    });
+}
+
+const btn = document.getElementById("myBtn");
+btn.addEventListener('click', () => {
+  modalContainer.style.display = 'block';
 });
+
+const closeBtn = document.getElementsByClassName('close')[0];
+closeBtn.addEventListener('click', () => {
+  modalContainer.style.display = 'none';
+});
+
+window.addEventListener('click', (event) => {
+  if (event.target == modalContainer) {
+    modalContainer.style.display = "none";
+  }
+});
+
+const API_URL = "http://localhost:5678/api/works";
+const token = localStorage.getItem('authToken');
+
+//Fonction pour supprimer les images 
+function deleteImage(id) {
+  const worksToDelete = document.querySelector(`[data-id="${id}"]`);
+
+  fetch(`${API_URL}/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      'Authorization': `Bearer ${token}`
+    },
+  }).then(() => {
+    worksToDelete.remove(); // supprime l'élément de la page
+  })
+}
 
 // verifier si login pour afficher le button ouvrir modal
 function checkModal() {
