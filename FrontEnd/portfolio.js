@@ -110,6 +110,9 @@ function genererModal(modalContent) {
   const closeBtn = document.createElement('span');
   closeBtn.innerHTML = '<i class="fas fa-times close"></i>';
   closeBtn.classList.add('close');
+  closeBtn.addEventListener('click', () => {
+    modalContainer.style.display = 'none';
+  });
 
   modalHeader.appendChild(modalTitle);
   modalHeader.appendChild(closeBtn);
@@ -198,6 +201,11 @@ function genererForm() {
   const closeBtn = document.createElement('span');
   closeBtn.innerHTML = '<i class="fas fa-times close"></i>';
   closeBtn.classList.add('close');
+  closeBtn.addEventListener('click', () => {
+    modalContainer.style.display = 'none';
+    modalContent.innerHTML = ''
+    genererModal(modalContent);
+  });
 
   // Créez un input de type "file" pour permettre la sélection d'un fichier image
   const input = document.createElement('input');
@@ -305,8 +313,7 @@ function genererForm() {
     formData.append('userId', 1);
 
     saveProject(formData);
-    modalContent.innerHTML = ''
-    genererModal(modalContent);
+
   });
 
 
@@ -340,7 +347,22 @@ function saveProject(formData) {
 
     .catch(error => {
       console.error(error);
-    });
+    })
+    .then(() => {
+      const imageGalerie = document.querySelector(`.gallery figure[data-id="${id}"]`);
+      if (imageGalerie) {
+        imageGalerie.add();
+      }
+
+      // Supprimer l'image de la modale
+      const imageModale = document.querySelector(`.galleryModal figure[data-id="${id}"]`);
+      if (imageModale) {
+        imageModale.add();
+      }
+    })
+
+  modalContent.innerHTML = '';
+  genererModal(modalContent);
 }
 
 const btn = document.getElementById("myBtn");
@@ -348,14 +370,12 @@ btn.addEventListener('click', () => {
   modalContainer.style.display = 'block';
 });
 
-const closeBtn = document.getElementsByClassName('close')[0];
-closeBtn.addEventListener('click', () => {
-  modalContainer.style.display = 'none';
-});
-
 window.addEventListener('click', (event) => {
   if (event.target == modalContainer) {
     modalContainer.style.display = "none";
+    modalContent.innerHTML = '';
+    genererModal(modalContent);
+
   }
 });
 
@@ -375,6 +395,18 @@ function deleteImage(id) {
   }).then(() => {
     worksToDelete.remove(); // supprime l'élément de la page
   })
+    .then(() => {
+      const imageGalerie = document.querySelector(`.gallery figure[data-id="${id}"]`);
+      if (imageGalerie) {
+        imageGalerie.remove();
+      }
+
+      // Supprimer l'image de la modale
+      const imageModale = document.querySelector(`.galleryModal figure[data-id="${id}"]`);
+      if (imageModale) {
+        imageModale.remove();
+      }
+    })
 }
 
 // verifier si login pour afficher le button ouvrir modal
