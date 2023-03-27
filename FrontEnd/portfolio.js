@@ -5,7 +5,6 @@ let categories = window.localStorage.getItem('categories')
 const divGallery = document.querySelector('.gallery')
 let works = window.localStorage.getItem('works')
 
-//TOdo a lier avec un déclencheur
 //Recuperation des categorie depuis l'api
 if (categories === null) {
   const reponse = await fetch('http://localhost:5678/api/categories')
@@ -67,6 +66,9 @@ function genererCategories(categories) {
     })
   }
 }
+
+// Vérifie si l'utilisateur est connecté et génère les catégories
+checkAuthentification()
 genererCategories(categories)
 
 //Fonction pour afficher les images de la galerie 
@@ -97,7 +99,7 @@ checkAuthentification()
 const modalContent = document.querySelector('.modal-content');
 const modalContainer = document.getElementById("myModal");
 
-function genererModal(modalContent) {
+function genererModal(works) {
 
   // Créer l'en-tête de la modale
   const modalHeader = document.createElement('div');
@@ -120,40 +122,37 @@ function genererModal(modalContent) {
   // Créer le contenu de la modale
   const galleryModal = document.createElement('div');
   galleryModal.classList.add('galleryModal');
+  for (let i = 0; i < works.length; i++) {
+    const figure = works[i];
 
-  function genererWorksModal(works) {
-    for (let i = 0; i < works.length; i++) {
-      const figure = works[i];
+    const worksModalElement = document.createElement('figure');
+    worksModalElement.dataset.id = figure.id;
 
-      const worksModalElement = document.createElement('figure');
-      worksModalElement.dataset.id = figure.id;
+    const scrWorksModalElement = document.createElement('img');
+    scrWorksModalElement.src = figure.imageUrl;
+    scrWorksModalElement.crossOrigin = 'anonymous';
 
-      const scrWorksModalElement = document.createElement('img');
-      scrWorksModalElement.src = figure.imageUrl;
-      scrWorksModalElement.crossOrigin = 'anonymous';
+    const figcaptionModalElement = document.createElement('figcaption');
+    figcaptionModalElement.innerText = 'éditer';
 
-      const figcaptionModalElement = document.createElement('figcaption');
-      figcaptionModalElement.innerText = 'éditer';
+    const deleteBtnElement = document.createElement('i');
+    deleteBtnElement.classList.add('fas', 'fa-trash-alt', 'btnSupprimer');
+    figcaptionModalElement.appendChild(deleteBtnElement);
 
-      const deleteBtnElement = document.createElement('i');
-      deleteBtnElement.classList.add('fas', 'fa-trash-alt', 'btnSupprimer');
-      figcaptionModalElement.appendChild(deleteBtnElement);
-
-      galleryModal.appendChild(worksModalElement);
-      worksModalElement.appendChild(scrWorksModalElement);
-      worksModalElement.appendChild(figcaptionModalElement);
+    galleryModal.appendChild(worksModalElement);
+    worksModalElement.appendChild(scrWorksModalElement);
+    worksModalElement.appendChild(figcaptionModalElement);
 
 
-      // Use a closure to pass the id parameter to the deleteImage function
-      deleteBtnElement.addEventListener('click', (function (id) {
-        return function (event) {
-          event.preventDefault();
-          deleteImage(id);
-        }
-      })(works[i].id));
-    }
+    // Use a closure to pass the id parameter to the deleteImage function
+    deleteBtnElement.addEventListener('click', (function (id) {
+      return function (event) {
+        event.preventDefault();
+        deleteImage(id);
+      }
+    })(works[i].id));
   }
-  genererWorksModal(works);
+
 
   // Créer le séparateur
   const separator = document.createElement('hr');
@@ -192,7 +191,10 @@ function genererModal(modalContent) {
   // Ajouter la modale à la balise parent
   modalContainer.appendChild(modalContent);
 }
-genererModal(modalContent);
+genererModal(works);
+
+
+
 
 function genererForm() {
   // Effacez le contenu de la modale
@@ -204,7 +206,7 @@ function genererForm() {
   closeBtn.addEventListener('click', () => {
     modalContainer.style.display = 'none';
     modalContent.innerHTML = ''
-    genererModal(modalContent);
+    genererModal(works);
   });
 
   // Créez un input de type "file" pour permettre la sélection d'un fichier image
@@ -246,7 +248,7 @@ function genererForm() {
 
   backButton.addEventListener('click', function () {
     modalContent.innerHTML = '';
-    genererModal(modalContent);
+    genererModal(works);
 
   });
 
@@ -330,7 +332,7 @@ function genererForm() {
   form.appendChild(button);
 }
 
-function saveProject(formData) {
+async function saveProject(formData) {
   // Envoyez une requête HTTP POST pour ajouter l'image
   fetch('http://localhost:5678/api/works', {
     method: 'POST',
@@ -342,27 +344,19 @@ function saveProject(formData) {
   })
     .then(response => response.json())
     .then(data => {
+      fetch('http://localhost:5678/api/works')
+        .then(response => response.json())
+        .then(data => {
+          modalContent.innerHTML = '';
+          genererModal(data);
+          divGallery.innerHTML = '';
+          genererWorks(data);
+        })
       console.log(data);
     })
-
     .catch(error => {
       console.error(error);
     })
-    .then(() => {
-      const imageGalerie = document.querySelector(`.gallery figure[data-id="${id}"]`);
-      if (imageGalerie) {
-        imageGalerie.add();
-      }
-
-      // Supprimer l'image de la modale
-      const imageModale = document.querySelector(`.galleryModal figure[data-id="${id}"]`);
-      if (imageModale) {
-        imageModale.add();
-      }
-    })
-
-  modalContent.innerHTML = '';
-  genererModal(modalContent);
 }
 
 const btn = document.getElementById("myBtn");
@@ -374,7 +368,7 @@ window.addEventListener('click', (event) => {
   if (event.target == modalContainer) {
     modalContainer.style.display = "none";
     modalContent.innerHTML = '';
-    genererModal(modalContent);
+    genererModal(works);
 
   }
 });
@@ -409,17 +403,6 @@ function deleteImage(id) {
     })
 }
 
-// verifier si login pour afficher le button ouvrir modal
-function checkModal() {
-  const openDialog = document.getElementById('myBtn')
-  if (checkAuthentification()) {
-    openDialog.style.display = 'block'
-  } else {
-    openDialog.style.display = 'none'
-  }
-}
-checkModal()
-
 //fonction pour se déconnecter
 function logOut() {
   let logoutElement = document.getElementById('logout');
@@ -427,7 +410,6 @@ function logOut() {
   logoutElement.addEventListener('click', () => {
     localStorage.removeItem('authToken')
     checkAuthentification()
-    checkModal()
   })
 }
 logOut()

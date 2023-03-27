@@ -362,14 +362,42 @@ input[type="submit"] {
 }
 
 /*********modale***********/
-.modal-btn {
+.categoriesNav {
+	display: none;
+}
+
+.categoriesNav.show {
+	display: flex;
+	justify-content: center;
+}
+
+.categoriesNav article {
+	margin: 0 20px;
+}
+
+.categoriesNav button {
+	font-size: 18px;
+	color: #ffffff;
+	background-color: #FF8C00;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 20px;
+	cursor: pointer;
+	transition: all 0.3s ease;
+}
+
+.categoriesNav button:hover {
+	background-color: #FFA500;
+}
+
+/* .modal-btn {
 	padding: 10px 14px;
 	font-size: 18px;
 	margin: 100px auto;
 	display: block;
 	min-width: 150px;
 	cursor: pointer;
-}
+} */
 
 /* .modal-container {
 	display: none;
