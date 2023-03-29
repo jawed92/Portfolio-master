@@ -1,98 +1,217 @@
-import { checkAuthentification } from "./log.js"
+// Variables globales
+let categories = JSON.parse(localStorage.getItem('categories') || 'null');
+const divGallery = document.querySelector('.gallery');
+let works = JSON.parse(localStorage.getItem('works') || 'null');
 
-// Variable globales 
-let categories = window.localStorage.getItem('categories')
-const divGallery = document.querySelector('.gallery')
-let works = window.localStorage.getItem('works')
-
-//Recuperation des categorie depuis l'api
-if (categories === null) {
-  const reponse = await fetch('http://localhost:5678/api/categories')
-  categories = await reponse.json()
-  // Transformation des catégories au format JSON
-  const valeurCategories = JSON.stringify(categories)
-  window.localStorage.setItem('categories', valeurCategories)
-} else {
-  categories = JSON.parse(categories)
+// Fonction pour récupérer les données depuis l'API et les stocker dans le localStorage
+async function fetchData(url, key) {
+  if (!localStorage.getItem(key)) {
+    const response = await fetch(url);
+    const data = await response.json();
+    localStorage.setItem(key, JSON.stringify(data));
+    return data;
+  } else {
+    return JSON.parse(localStorage.getItem(key));
+  }
 }
 
-
-// Initilisation de la variable pour recuperer la liste des projets
-if (works === null) {
-  // Recuperation des images de l'API
-  const reponse = await fetch('http://localhost:5678/api/works')
-  works = await reponse.json()
-
-  // Transformation des pièces en JSON
-  const valeurWorks = JSON.stringify(works)
-
-  // Stockage des informations dans le localStorage
-  window.localStorage.setItem(works, valeurWorks)
-} else {
-  works = JSON.parse(works)
-}
-console.log(works)
-
-function genererCategories(categories) {
-  const buttonAll = document.getElementById('btnAll')
+// Fonction pour générer les catégories et leurs boutons associés
+function generateCategories(categories) {
+  const buttonAll = document.getElementById('btnAll');
   buttonAll.addEventListener('click', function () {
-    divGallery.innerText = ''
-    genererWorks(works)
-  })
+    divGallery.innerText = '';
+    generateWorks(works);
+  });
 
-  for (let i = 0; i < categories.length; i++) {
-    const article = categories[i]
-    // Récupération de l'élément du DOM qui accueillera les categories
-    const sectionCategories = document.querySelector('.categoriesNav')
-    // Création d’une balise dédiée à une categorie
-    const categoriesElement = document.createElement('article')
-    categoriesElement.dataset.id = categories[i].id
-    // Création des balises
-    const boutonCategorie = document.createElement('button')
-    boutonCategorie.innerText = article.name
-    boutonCategorie.dataset.id = article.id
-
-    sectionCategories.appendChild(categoriesElement)
-    categoriesElement.appendChild(boutonCategorie)
+  for (const category of categories) {
+    const categoriesElement = document.createElement('article');
+    categoriesElement.dataset.id = category.id;
+    const boutonCategorie = document.createElement('button');
+    boutonCategorie.innerText = category.name;
+    boutonCategorie.dataset.id = category.id;
+    categoriesElement.appendChild(boutonCategorie);
+    document.querySelector('.categoriesNav').appendChild(categoriesElement);
     boutonCategorie.addEventListener('click', function () {
-      const worksFiltered = works.filter(function (work) {
-        if (work.categoryId === categories[i].id) {
-          return work
-        }
-      })
-      console.log(worksFiltered)
-      divGallery.innerText = ''
-      genererWorks(worksFiltered)
-    })
+      const worksFiltered = works.filter((work) => work.categoryId === category.id);
+      divGallery.innerText = '';
+      generateWorks(worksFiltered);
+    });
   }
 }
 
 // Vérifie si l'utilisateur est connecté et génère les catégories
-checkAuthentification()
-genererCategories(categories)
-
-//Fonction pour afficher les images de la galerie 
-function genererWorks(works) {
-  for (let i = 0; i < works.length; i++) {
-    const figure = works[i]
-
-    const worksElement = document.createElement('figure')
-    worksElement.dataset.id = works[i].id
-    const scrWorksElement = document.createElement('img')
-    scrWorksElement.src = figure.imageUrl + '?random=' + Math.random()
-    scrWorksElement.crossOrigin = 'anonymous'
-    const figcaptionElement = document.createElement('figcaption')
-    figcaptionElement.innerText = figure.title
-
-    divGallery.appendChild(worksElement)
-    worksElement.appendChild(scrWorksElement)
-    worksElement.appendChild(figcaptionElement)
+function checkAuthentification() {
+  const loginElement = document.getElementById('login');
+  const logoutElement = document.getElementById('logout');
+  const publier = document.querySelector('.publier');
+  const categoriesNav = document.querySelector('.categoriesNav');
+  const btnModal = document.getElementById('myBtn');
+  const authToken = localStorage.getItem('authToken');
+  if (authToken) {
+    categoriesNav.classList.remove('show');
+    publier.classList.add('show');
+    btnModal.style.display = 'block';
+    loginElement.style.display = 'none';
+    logoutElement.style.display = 'block';
+    genererModal(works); // Ajout de la ligne pour générer la modale
+    return true;
+  } else {
+    categoriesNav.classList.add('show');
+    publier.classList.remove('show');
+    btnModal.style.display = 'none';
+    loginElement.style.display = 'block';
+    logoutElement.style.display = 'none';
+    return false;
   }
 }
-genererWorks(works)
-console.log(genererWorks)
 
-checkAuthentification()
+// Fonction pour générer les oeuvres à partir des données récupérées depuis l'API
+function generateWorks(works) {
+  for (const work of works) {
+    const worksElement = document.createElement('figure');
+    worksElement.dataset.id = work.id;
+    const scrWorksElement = document.createElement('img');
+    scrWorksElement.src = work.imageUrl + '?random=' + Math.random();
+    scrWorksElement.crossOrigin = 'anonymous';
+    const figcaptionElement = document.createElement('figcaption');
+    figcaptionElement.innerText = work.title;
+    worksElement.appendChild(scrWorksElement);
+    worksElement.appendChild(figcaptionElement);
+    divGallery.appendChild(worksElement);
+  }
+}
+
+// Fonction principale qui appelle les autres fonctions
+async function main() {
+  categories = await fetchData('http://localhost:5678/api/categories', 'categories');
+  works = await fetchData('http://localhost:5678/api/works', 'works');
+  generateCategories(categories);
+  generateWorks(works);
+  checkAuthentification();
+}
+
+// Appelle la fonction principale
+main();
+
+
+
+
+// // Variable globales 
+// let categories = window.localStorage.getItem('categories')
+// const divGallery = document.querySelector('.gallery')
+// let works = window.localStorage.getItem('works')
+
+// //Recuperation des categorie depuis l'api
+// if (categories === null) {
+//   const reponse = await fetch('http://localhost:5678/api/categories')
+//   categories = await reponse.json()
+//   // Transformation des catégories au format JSON
+//   const valeurCategories = JSON.stringify(categories)
+//   window.localStorage.setItem('categories', valeurCategories)
+// } else {
+//   categories = JSON.parse(categories)
+// }
+
+
+// // Initilisation de la variable pour recuperer la liste des projets
+// if (works === null) {
+//   // Recuperation des images de l'API
+//   const reponse = await fetch('http://localhost:5678/api/works')
+//   works = await reponse.json()
+
+//   // Transformation des pièces en JSON
+//   const valeurWorks = JSON.stringify(works)
+
+//   // Stockage des informations dans le localStorage
+//   window.localStorage.setItem(works, valeurWorks)
+// } else {
+//   works = JSON.parse(works)
+// }
+// console.log(works)
+
+// function genererCategories(categories) {
+//   const buttonAll = document.getElementById('btnAll')
+//   buttonAll.addEventListener('click', function () {
+//     divGallery.innerText = ''
+//     genererWorks(works)
+//   })
+
+//   for (let i = 0; i < categories.length; i++) {
+//     const article = categories[i]
+//     // Récupération de l'élément du DOM qui accueillera les categories
+//     const sectionCategories = document.querySelector('.categoriesNav')
+//     // Création d’une balise dédiée à une categorie
+//     const categoriesElement = document.createElement('article')
+//     categoriesElement.dataset.id = categories[i].id
+//     // Création des balises
+//     const boutonCategorie = document.createElement('button')
+//     boutonCategorie.innerText = article.name
+//     boutonCategorie.dataset.id = article.id
+
+//     sectionCategories.appendChild(categoriesElement)
+//     categoriesElement.appendChild(boutonCategorie)
+//     boutonCategorie.addEventListener('click', function () {
+//       const worksFiltered = works.filter(function (work) {
+//         if (work.categoryId === categories[i].id) {
+//           return work
+//         }
+//       })
+//       console.log(worksFiltered)
+//       divGallery.innerText = ''
+//       genererWorks(worksFiltered)
+//     })
+//   }
+// }
+
+// // Vérifie si l'utilisateur est connecté et génère les catégories
+// checkAuthentification()
+// genererCategories(categories)
+
+// //Fonction pour afficher les images de la galerie 
+// function genererWorks(works) {
+//   for (let i = 0; i < works.length; i++) {
+//     const figure = works[i]
+
+//     const worksElement = document.createElement('figure')
+//     worksElement.dataset.id = works[i].id
+//     const scrWorksElement = document.createElement('img')
+//     scrWorksElement.src = figure.imageUrl + '?random=' + Math.random()
+//     scrWorksElement.crossOrigin = 'anonymous'
+//     const figcaptionElement = document.createElement('figcaption')
+//     figcaptionElement.innerText = figure.title
+
+//     divGallery.appendChild(worksElement)
+//     worksElement.appendChild(scrWorksElement)
+//     worksElement.appendChild(figcaptionElement)
+//   }
+// }
+// genererWorks(works)
+// console.log(genererWorks)
+
+// function checkAuthentification() {
+//   let loginElement = document.getElementById('login');
+//   let logoutElement = document.getElementById('logout');
+//   const categoriesNav = document.querySelector('.categoriesNav');
+//   const btnModal = document.getElementById('myBtn');
+//   if (localStorage.getItem('authToken')) {
+//     console.log('connecté');
+//     categoriesNav.classList.remove('show')
+//     btnModal.style.display = 'block'
+//     loginElement.style.display = 'none'
+//     logoutElement.style.display = 'block'
+//     console.log('fgsdfdsd')
+//     return true
+//   } else {
+//     console.log('not connected');
+//     categoriesNav.classList.add('show')
+//     btnModal.style.display = 'none'
+//     loginElement.style.display = 'block';
+//     logoutElement.style.display = 'none'
+//     return false
+//   }
+// }
+
+// checkAuthentification()
 
 
 // Récupérer la balise parent
@@ -143,14 +262,14 @@ function genererModal(works) {
     worksModalElement.appendChild(scrWorksModalElement);
     worksModalElement.appendChild(figcaptionModalElement);
 
-
-    // Use a closure to pass the id parameter to the deleteImage function
-    deleteBtnElement.addEventListener('click', (function (id) {
-      return function (event) {
-        event.preventDefault();
-        deleteImage(id);
-      }
-    })(works[i].id));
+    deleteBtnElement.addEventListener('click', deleteImage(works[i].id));
+    // // Use a closure to pass the id parameter to the deleteImage function
+    // deleteBtnElement.addEventListener('click', (function (id) {
+    //   return function (event) {
+    //     event.preventDefault();
+    //     deleteImage(id);
+    //   }
+    // })(works[i].id));
   }
 
 
@@ -191,7 +310,6 @@ function genererModal(works) {
   // Ajouter la modale à la balise parent
   modalContainer.appendChild(modalContent);
 }
-genererModal(works);
 
 
 
@@ -374,20 +492,21 @@ window.addEventListener('click', (event) => {
 });
 
 const API_URL = "http://localhost:5678/api/works";
-const token = localStorage.getItem('authToken');
+
 
 //Fonction pour supprimer les images 
 function deleteImage(id) {
   const worksToDelete = document.querySelector(`[data-id="${id}"]`);
-
+  const token = localStorage.getItem('authToken');
   fetch(`${API_URL}/${id}`, {
     method: "DELETE",
     headers: {
-      "Content-Type": "application/json",
+      // "Content-Type": "application/json",
       'Authorization': `Bearer ${token}`
     },
   }).then(() => {
     worksToDelete.remove(); // supprime l'élément de la page
+    console.log('message');
   })
     .then(() => {
       const imageGalerie = document.querySelector(`.gallery figure[data-id="${id}"]`);
