@@ -3,16 +3,30 @@ let categories = JSON.parse(localStorage.getItem('categories') || 'null');
 const divGallery = document.querySelector('.gallery');
 let works = JSON.parse(localStorage.getItem('works') || 'null');
 
+// ******************************************************
+function getToken() {
+  return localStorage.getItem('authToken');
+}
+
 // Fonction pour récupérer les données depuis l'API et les stocker dans le localStorage
 async function fetchData(url, key) {
-  if (!localStorage.getItem(key)) {
-    const response = await fetch(url);
-    const data = await response.json();
-    localStorage.setItem(key, JSON.stringify(data));
-    return data;
-  } else {
-    return JSON.parse(localStorage.getItem(key));
-  }
+  // *************************************************************************
+  // if (!localStorage.getItem(key)) {
+  const response = await fetch(url);
+  const data = await response.json();
+  localStorage.setItem(key, JSON.stringify(data));
+  return data;
+}
+
+// ******************************************
+function removeFromLocalStorage(idWork) {
+  let works = JSON.parse(localStorage.getItem("works"));
+  let worksFiltered = works.filter(work => {
+    if (work.id != idWork) {
+      return work;
+    }
+  });
+  localStorage.setItem("works", JSON.stringify(worksFiltered));
 }
 
 // Fonction pour générer les catégories et leurs boutons associés
@@ -84,7 +98,8 @@ function generateWorks(works) {
 // Fonction principale qui appelle les autres fonctions
 async function main() {
   categories = await fetchData('http://localhost:5678/api/categories', 'categories');
-  works = await fetchData('http://localhost:5678/api/works', 'works');
+  // ****************************************************
+  works = await fetchData(API_URL, 'works');
   generateCategories(categories);
   generateWorks(works);
   checkAuthentification();
@@ -92,127 +107,6 @@ async function main() {
 
 // Appelle la fonction principale
 main();
-
-
-
-
-// // Variable globales 
-// let categories = window.localStorage.getItem('categories')
-// const divGallery = document.querySelector('.gallery')
-// let works = window.localStorage.getItem('works')
-
-// //Recuperation des categorie depuis l'api
-// if (categories === null) {
-//   const reponse = await fetch('http://localhost:5678/api/categories')
-//   categories = await reponse.json()
-//   // Transformation des catégories au format JSON
-//   const valeurCategories = JSON.stringify(categories)
-//   window.localStorage.setItem('categories', valeurCategories)
-// } else {
-//   categories = JSON.parse(categories)
-// }
-
-
-// // Initilisation de la variable pour recuperer la liste des projets
-// if (works === null) {
-//   // Recuperation des images de l'API
-//   const reponse = await fetch('http://localhost:5678/api/works')
-//   works = await reponse.json()
-
-//   // Transformation des pièces en JSON
-//   const valeurWorks = JSON.stringify(works)
-
-//   // Stockage des informations dans le localStorage
-//   window.localStorage.setItem(works, valeurWorks)
-// } else {
-//   works = JSON.parse(works)
-// }
-// console.log(works)
-
-// function genererCategories(categories) {
-//   const buttonAll = document.getElementById('btnAll')
-//   buttonAll.addEventListener('click', function () {
-//     divGallery.innerText = ''
-//     genererWorks(works)
-//   })
-
-//   for (let i = 0; i < categories.length; i++) {
-//     const article = categories[i]
-//     // Récupération de l'élément du DOM qui accueillera les categories
-//     const sectionCategories = document.querySelector('.categoriesNav')
-//     // Création d’une balise dédiée à une categorie
-//     const categoriesElement = document.createElement('article')
-//     categoriesElement.dataset.id = categories[i].id
-//     // Création des balises
-//     const boutonCategorie = document.createElement('button')
-//     boutonCategorie.innerText = article.name
-//     boutonCategorie.dataset.id = article.id
-
-//     sectionCategories.appendChild(categoriesElement)
-//     categoriesElement.appendChild(boutonCategorie)
-//     boutonCategorie.addEventListener('click', function () {
-//       const worksFiltered = works.filter(function (work) {
-//         if (work.categoryId === categories[i].id) {
-//           return work
-//         }
-//       })
-//       console.log(worksFiltered)
-//       divGallery.innerText = ''
-//       genererWorks(worksFiltered)
-//     })
-//   }
-// }
-
-// // Vérifie si l'utilisateur est connecté et génère les catégories
-// checkAuthentification()
-// genererCategories(categories)
-
-// //Fonction pour afficher les images de la galerie 
-// function genererWorks(works) {
-//   for (let i = 0; i < works.length; i++) {
-//     const figure = works[i]
-
-//     const worksElement = document.createElement('figure')
-//     worksElement.dataset.id = works[i].id
-//     const scrWorksElement = document.createElement('img')
-//     scrWorksElement.src = figure.imageUrl + '?random=' + Math.random()
-//     scrWorksElement.crossOrigin = 'anonymous'
-//     const figcaptionElement = document.createElement('figcaption')
-//     figcaptionElement.innerText = figure.title
-
-//     divGallery.appendChild(worksElement)
-//     worksElement.appendChild(scrWorksElement)
-//     worksElement.appendChild(figcaptionElement)
-//   }
-// }
-// genererWorks(works)
-// console.log(genererWorks)
-
-// function checkAuthentification() {
-//   let loginElement = document.getElementById('login');
-//   let logoutElement = document.getElementById('logout');
-//   const categoriesNav = document.querySelector('.categoriesNav');
-//   const btnModal = document.getElementById('myBtn');
-//   if (localStorage.getItem('authToken')) {
-//     console.log('connecté');
-//     categoriesNav.classList.remove('show')
-//     btnModal.style.display = 'block'
-//     loginElement.style.display = 'none'
-//     logoutElement.style.display = 'block'
-//     console.log('fgsdfdsd')
-//     return true
-//   } else {
-//     console.log('not connected');
-//     categoriesNav.classList.add('show')
-//     btnModal.style.display = 'none'
-//     loginElement.style.display = 'block';
-//     logoutElement.style.display = 'none'
-//     return false
-//   }
-// }
-
-// checkAuthentification()
-
 
 // Récupérer la balise parent
 const modalContent = document.querySelector('.modal-content');
@@ -262,14 +156,12 @@ function genererModal(works) {
     worksModalElement.appendChild(scrWorksModalElement);
     worksModalElement.appendChild(figcaptionModalElement);
 
-    deleteBtnElement.addEventListener('click', deleteImage(works[i].id));
-    // // Use a closure to pass the id parameter to the deleteImage function
-    // deleteBtnElement.addEventListener('click', (function (id) {
-    //   return function (event) {
-    //     event.preventDefault();
-    //     deleteImage(id);
-    //   }
-    // })(works[i].id));
+    deleteBtnElement.addEventListener('click', (function (id) {
+      return function (event) {
+        event.preventDefault();
+        deleteImage(id);
+      }
+    })(works[i].id));
   }
 
 
@@ -455,22 +347,20 @@ async function saveProject(formData) {
   fetch('http://localhost:5678/api/works', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${token}`
+      //  **************************************
+      'Authorization': `Bearer ${getToken()}`
     },
     body: formData,
 
   })
     .then(response => response.json())
-    .then(data => {
-      fetch('http://localhost:5678/api/works')
-        .then(response => response.json())
-        .then(data => {
-          modalContent.innerHTML = '';
-          genererModal(data);
-          divGallery.innerHTML = '';
-          genererWorks(data);
-        })
-      console.log(data);
+    .then(async (data) => {
+      works = await fetchData(API_URL, "works");
+      modalContent.innerHTML = '';
+      genererModal(works);
+      divGallery.innerHTML = '';
+      generateWorks(works);
+
     })
     .catch(error => {
       console.error(error);
@@ -497,23 +387,24 @@ const API_URL = "http://localhost:5678/api/works";
 //Fonction pour supprimer les images 
 function deleteImage(id) {
   const worksToDelete = document.querySelector(`[data-id="${id}"]`);
-  const token = localStorage.getItem('authToken');
   fetch(`${API_URL}/${id}`, {
     method: "DELETE",
     headers: {
       // "Content-Type": "application/json",
-      'Authorization': `Bearer ${token}`
+      'Authorization': `Bearer ${getToken()}`
     },
   }).then(() => {
     worksToDelete.remove(); // supprime l'élément de la page
     console.log('message');
   })
-    .then(() => {
+    .then(async () => {
       const imageGalerie = document.querySelector(`.gallery figure[data-id="${id}"]`);
       if (imageGalerie) {
         imageGalerie.remove();
       }
-
+      // ********************************************************************
+      removeFromLocalStorage(id);
+      works = await fetchData(API_URL, "works");
       // Supprimer l'image de la modale
       const imageModale = document.querySelector(`.galleryModal figure[data-id="${id}"]`);
       if (imageModale) {
