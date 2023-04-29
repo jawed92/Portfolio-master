@@ -3,22 +3,21 @@ let categories = JSON.parse(localStorage.getItem('categories') || 'null');
 const divGallery = document.querySelector('.gallery');
 let works = JSON.parse(localStorage.getItem('works') || 'null');
 
-// ******************************************************
+
+//Recuperation du localStorage pour y mettre la valeur associée à la clé 'authToken'.
 function getToken() {
   return localStorage.getItem('authToken');
 }
 
 // Fonction pour récupérer les données depuis l'API et les stocker dans le localStorage
 async function fetchData(url, key) {
-  // *************************************************************************
-  // if (!localStorage.getItem(key)) {
   const response = await fetch(url);
   const data = await response.json();
   localStorage.setItem(key, JSON.stringify(data));
   return data;
 }
 
-// ******************************************
+// Fonction pour filtrer les differentes categories
 function removeFromLocalStorage(idWork) {
   let works = JSON.parse(localStorage.getItem("works"));
   let worksFiltered = works.filter(work => {
@@ -53,7 +52,7 @@ function generateCategories(categories) {
   }
 }
 
-// Vérifie si l'utilisateur est connecté et génère les catégories
+// Vérifie si l'utilisateur est connecté pour afficher ou non certaines fonctionnalitées
 function checkAuthentification() {
   const loginElement = document.getElementById('login');
   const logoutElement = document.getElementById('logout');
@@ -61,17 +60,20 @@ function checkAuthentification() {
   const categoriesNav = document.querySelector('.categoriesNav');
   const btnModal = document.getElementById('myBtn');
   const authToken = localStorage.getItem('authToken');
+  const btntModifierPhoto = document.querySelector('.modifierSpan');
   if (authToken) {
     categoriesNav.classList.remove('show');
     publier.classList.add('show');
+    btntModifierPhoto.style.display = 'block';
     btnModal.style.display = 'block';
     loginElement.style.display = 'none';
     logoutElement.style.display = 'block';
-    genererModal(works); // Ajout de la ligne pour générer la modale
+    genererModal(works);
     return true;
   } else {
     categoriesNav.classList.add('show');
     publier.classList.remove('show');
+    btntModifierPhoto.style.display = 'none';
     btnModal.style.display = 'none';
     loginElement.style.display = 'block';
     logoutElement.style.display = 'none';
@@ -79,7 +81,7 @@ function checkAuthentification() {
   }
 }
 
-// Fonction pour générer les oeuvres à partir des données récupérées depuis l'API
+// Fonction pour générer les images à partir des données récupérées depuis l'API
 function generateWorks(works) {
   for (const work of works) {
     const worksElement = document.createElement('figure');
@@ -98,7 +100,6 @@ function generateWorks(works) {
 // Fonction principale qui appelle les autres fonctions
 async function main() {
   categories = await fetchData('http://localhost:5678/api/categories', 'categories');
-  // ****************************************************
   works = await fetchData(API_URL, 'works');
   generateCategories(categories);
   generateWorks(works);
@@ -108,10 +109,11 @@ async function main() {
 // Appelle la fonction principale
 main();
 
-// Récupérer la balise parent
+// Récupérer la balise parent pour la modale
 const modalContent = document.querySelector('.modal-content');
 const modalContainer = document.getElementById("myModal");
 
+// Fonction qui crée et que génère la modale
 function genererModal(works) {
 
   // Créer l'en-tête de la modale
@@ -128,9 +130,9 @@ function genererModal(works) {
   closeBtn.addEventListener('click', () => {
     modalContainer.style.display = 'none';
   });
-
-  modalHeader.appendChild(modalTitle);
   modalHeader.appendChild(closeBtn);
+  modalHeader.appendChild(modalTitle);
+
 
   // Créer le contenu de la modale
   const galleryModal = document.createElement('div');
@@ -205,7 +207,7 @@ function genererModal(works) {
 
 
 
-
+// Fonction pour la deuxieme modale
 function genererForm() {
   // Effacez le contenu de la modale
   modalContent.innerHTML = '';
@@ -219,9 +221,54 @@ function genererForm() {
     genererModal(works);
   });
 
-  // Créez un input de type "file" pour permettre la sélection d'un fichier image
+  // Créer l'en-tête de la modale
+  const modal2Header = document.createElement('div');
+  modal2Header.classList.add('modal2Header');
+
+  // Créez un conteneur pour l'input
+  const container = document.createElement('div');
+  container.classList.add('input-file-container');
+
+  // Créez un label pour l'input
+  const label = document.createElement('label');
+  label.setAttribute('for', 'file-input');
+  label.classList.add('input-file-label');
+
+  // Créez un bouton pour remplacer le span "Ajouter photo"
+  const buttonAjoutFile = document.createElement('button');
+  buttonAjoutFile.classList.add('input-file-button');
+  buttonAjoutFile.textContent = 'Ajouter photo';
+  label.appendChild(buttonAjoutFile);
+
+  // Ajoutez un gestionnaire d'événements pour le bouton
+  buttonAjoutFile.addEventListener('click', function (event) {
+    event.preventDefault();
+    input.click();
+  });
+
+  // Créez une icône pour le label
+  const icon = document.createElement('i');
+  icon.classList.add('far', 'fa-sharp', 'fa-light', 'fa-image', 'input-file-icon');
+  label.appendChild(icon);
+
+  // Créez l'input
   const input = document.createElement('input');
-  input.type = 'file';
+  input.setAttribute('type', 'file');
+  input.setAttribute('id', 'file-input');
+  input.classList.add('input-file');
+  input.setAttribute('accept', '.jpg,.png');
+  input.setAttribute('max-size', '4');
+  input.style.display = 'none';
+
+  // Créez une phrase pour le conteneur
+  const hint = document.createElement('p');
+  hint.classList.add('input-file-hint');
+  hint.textContent = 'jpg, png : 4 Mo max';
+
+  // Ajoutez tous les éléments au conteneur
+  container.appendChild(label);
+  container.appendChild(input);
+  container.appendChild(hint);
 
   // Titre de la modal 
   const titleModal = document.createElement('h1');
@@ -231,28 +278,44 @@ function genererForm() {
   const form = document.createElement('form');
   form.setAttribute('class', 'formModal')
 
+
+  // Créez un conteneur pour l'aperçu de l'image
+  const previewContainer = document.createElement('div');
+  previewContainer.classList.add('input-file-preview');
+  previewContainer.style.display = 'none';
+
+  // Créez un élément pour l'aperçu de l'image
+  const preview = document.createElement('img');
+  preview.style.maxWidth = '50%';
+  previewContainer.appendChild(preview);
+
+
   // Ajoutez un gestionnaire d'événements pour la prévisualisation de l'image
   input.addEventListener('change', function () {
     const file = this.files[0];
     if (file) {
       const reader = new FileReader();
       reader.addEventListener('load', function () {
-        const preview = document.createElement('img');
         preview.src = reader.result;
-        preview.style.maxWidth = '50%';
-        form.replaceChild(preview, input);
+        previewContainer.style.display = 'block';
+        container.style.display = 'none';
       });
       reader.readAsDataURL(file);
     }
   });
 
+  // Ajoutez tous les éléments au formulaire
+  form.appendChild(container);
+  form.appendChild(previewContainer);
+
   // Créez un champ de saisie pour le titre de la photo
   const titreAjout = document.createElement('input');
   titreAjout.type = 'text';
   titreAjout.setAttribute('name', 'titre');
+  titreAjout.classList.add('titlePhotoUpload');
 
   // Créez un bouton pour revenir à la page précédente
-  const backButton = document.createElement('button');
+  const backButton = document.createElement('span');
   backButton.setAttribute('class', 'backButton');
   backButton.innerHTML = '<i class="fas fa-arrow-left"></i>';
 
@@ -271,6 +334,11 @@ function genererForm() {
   // Créez un selecteur pour choisir une catégorie de photo
   const select = document.createElement('select');
   select.setAttribute('name', 'category');
+  select.classList.add('select');
+  const labelSelect = document.createElement('label');
+  labelSelect.setAttribute('for', 'category');
+  labelSelect.setAttribute('class', 'labelSelect');
+  labelSelect.innerHTML = "Catégorie";
 
   // Créez une option par défaut pour le selecteur
   const optionInit = document.createElement('option');
@@ -289,10 +357,14 @@ function genererForm() {
     select.add(option);
   }
 
+  // Créer le séparateur
+  const separator = document.createElement('hr');
+  separator.classList.add('separateur2');
+
   const button = document.createElement('button');
   button.setAttribute('type', 'submit');
   button.setAttribute('class', 'btnAjout');
-  button.innerText = 'Ajouter';
+  button.innerText = 'Valider';
 
   // Ajoutez un gestionnaire d'événements au bouton d'ajout pour envoyer les données via une requête HTTP POST
   button.addEventListener('click', (event) => {
@@ -330,24 +402,27 @@ function genererForm() {
 
 
   // Ajoutez le formulaire, le selecteur et le bouton à la modale
+  modal2Header.appendChild(backButton);
+  modal2Header.appendChild(closeBtn);
+  modalContent.appendChild(modal2Header);
   modalContent.appendChild(titleModal);
-  modalContent.appendChild(closeBtn);
-  modalContent.appendChild(backButton);
   modalContent.appendChild(form);
-  form.appendChild(input);
+  form.appendChild(container);
   form.appendChild(labelTitreAjout);
   form.appendChild(titreAjout);
+  form.appendChild(labelSelect);
   form.appendChild(select);
   select.appendChild(optionInit);
+  form.appendChild(separator);
   form.appendChild(button);
 }
 
+// Fonction pour ajouter une image
 async function saveProject(formData) {
   // Envoyez une requête HTTP POST pour ajouter l'image
   fetch('http://localhost:5678/api/works', {
     method: 'POST',
     headers: {
-      //  **************************************
       'Authorization': `Bearer ${getToken()}`
     },
     body: formData,
@@ -402,7 +477,6 @@ function deleteImage(id) {
       if (imageGalerie) {
         imageGalerie.remove();
       }
-      // ********************************************************************
       removeFromLocalStorage(id);
       works = await fetchData(API_URL, "works");
       // Supprimer l'image de la modale
@@ -416,7 +490,6 @@ function deleteImage(id) {
 //fonction pour se déconnecter
 function logOut() {
   let logoutElement = document.getElementById('logout');
-
   logoutElement.addEventListener('click', () => {
     localStorage.removeItem('authToken')
     checkAuthentification()

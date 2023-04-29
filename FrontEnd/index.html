@@ -14,7 +14,7 @@
 </head>
 <body>
 	<div class="publier">
-		<span class="modifierPublier"><i class="far fa-edit"></i>Modifier</span>
+		<span class="modifierPublier"><i class="far fa-edit modifier"></i>Modifier</span>
 		<button class="btnPublier">publier les changements</button>
 	</div>
 <header>
@@ -25,17 +25,18 @@
 			<li>projets</li>
 			<li>contact</li>
 			<li><a href="login.html" id="login"> login</a></li>
-			<li><a id="logout" style="display: none"> deconnecté</a></li>
+			<li><a id="logout" style="display: none"> logout</a></li>
 			<li><img src="./assets/icons/instagram.png" alt="Instagram"></li>
 		</ul>
 	</nav>
 </header>
 <main>
 	<section id="introduction">
-		<figure>
+		<figure class="photoBtnModifier">
 			<img src="./assets/images/sophie-bluel.png" alt="">
+			<span class="modifierSpan"><i class="far fa-edit modifierPhoto"></i>Modifier</span>
 		</figure>
-		 <span><i class="far fa-edit"></i>Modifier</span>
+		 
 		<article>
 			<h2>Designer d'espace</h2>
 			<p>Je raconte votre histoire, je valorise vos idées. Je vous accompagne de la conception à la livraison finale du chantier.</p>
@@ -44,6 +45,7 @@
 		</article>
 	</section>
 	<section id="portfolio">
+		<div class="blokModifier">
 		<h2>Mes Projets</h2>
 
 <!-- The Modal -->
@@ -56,7 +58,8 @@
 
 </div>
 <!-- Bouton pour ouvrir la modale -->
-<button id="myBtn"><i class="far fa-edit"></i>Modifier</button>
+<button id="myBtn"><i class="far fa-edit modifier"></i>Modifier</button>
+</div>
 		<section class="categoriesNav">
 			<button id="btnAll">Tous</button>
 		</section>
