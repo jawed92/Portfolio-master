@@ -9,7 +9,7 @@ form.addEventListener('submit', async (event) => {
 
   // validation de l'email et du mot de passe
   if (!email || !password) {
-    alert('Email and password are required.')
+    alert('Email et le mot de passe est requis.')
     return
   }
 
@@ -27,11 +27,11 @@ form.addEventListener('submit', async (event) => {
       localStorage.setItem('authToken', json.token)
       window.location.replace('index.html')
     } else {
-      alert('Login failed. Please try again.')
+      alert('L\'email ou le mot de passe n\'est pas correct.')
     }
   } catch (error) {
     console.error(error)
-    alert('An error occurred. Please try again later.')
+    alert('Une erreur est survenue. Merci de réessayer.')
   }
 })
 
